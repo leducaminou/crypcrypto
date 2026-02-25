@@ -1,0 +1,505 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                 BigInt    @id @default(autoincrement()) @map("id")
+  email              String    @unique
+  password_hash      String
+  first_name         String?
+  last_name          String?
+  phone              String?
+  role               Role      @default(USER)
+  verification_token String?
+  is_email_verified  Boolean   @default(false)
+  email_verified_at  DateTime?
+  created_at         DateTime  @default(now()) @db.Timestamp(0)
+  updated_at         DateTime  @updatedAt @db.Timestamp(0)
+  last_login_at      DateTime?
+  last_login_ip      String?
+  remember_token     String?
+  is_active          Boolean   @default(true)
+  is_locked          Boolean   @default(false)
+  is_new_user          Boolean   @default(true)
+  referral_code      String    @unique
+  referred_by        BigInt?
+
+  // Relations
+  country_id BigInt 
+  country   Countries @relation(fields: [country_id], references: [id])
+
+  profile             UserProfile?
+  kycVerifications    KycVerification[]
+  notifications       Notification[]
+  wallet              Wallet[] // Changé de wallets à wallet (un seul portefeuille)
+  paymentAccounts     PaymentAccount[] // Nouvelle relation pour les comptes de paiement
+  transactions        Transaction[]
+  investments         Investment[]
+  security            UserSecurity?
+  adminActivities     AdminActivity[]
+  kycReviews          KycVerification[] @relation("KycReviewedBy")
+  withdrawalApprovals Withdrawal[]      @relation("WithdrawalApprovedBy")
+  withdrawals         Withdrawal[]      @relation("WithdrawalUser")
+  activationTokens    ActivationToken[]
+
+  @@index([referral_code], name: "idx_referral_code")
+  @@index([email], name: "idx_email")
+  @@map("users")
+}
+
+model Countries {  // 
+  id           BigInt    @id @default(autoincrement())
+  name         String @unique   
+  country_code String @unique   
+  dial_code    String @unique 
+  is_active            Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+
+  users User[]  // Relation au pluriel
+}
+model ActivationToken {
+  id        BigInt   @id @default(autoincrement()) @map("id")
+  token     String   @unique
+  user_id   BigInt
+  user      User     @relation(fields: [user_id], references: [id])
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+
+  @@index([user_id])
+  @@index([token])
+  @@index([expiresAt])
+}
+
+model Withdrawal {
+  id                 BigInt    @id @default(autoincrement()) @map("id")
+  transaction_id     BigInt    @unique
+  user_id            BigInt
+  payment_account_id BigInt? // Nouveau champ pour lier au compte de paiement   
+  rejection_reason   String?   @db.Text
+  approved_by        BigInt?
+  approved_at        DateTime?
+  created_at         DateTime  @default(now()) @db.Timestamp(0)
+  updated_at         DateTime  @updatedAt @db.Timestamp(0)
+
+  // Relations
+  transaction    Transaction     @relation(fields: [transaction_id], references: [id], onDelete: Cascade)
+  user           User            @relation("WithdrawalUser", fields: [user_id], references: [id])
+  approvedBy     User?           @relation("WithdrawalApprovedBy", fields: [approved_by], references: [id])
+  paymentAccount PaymentAccount? @relation(fields: [payment_account_id], references: [id]) // Nouvelle relation
+
+  @@index([user_id], name: "idx_withdrawal_user")
+  @@index([transaction_id], name: "idx_withdrawal_transaction")
+  @@index([payment_account_id], name: "idx_withdrawal_payment_account")
+  @@map("withdrawals")
+}
+
+model KycVerification {
+  id                 BigInt       @id @default(autoincrement()) @map("id")
+  user_id            BigInt
+  document_type      DocumentType
+  document_number    String
+  document_front_url String
+  document_back_url  String?
+  selfie_url         String
+  status             KycStatus    @default(PENDING)
+  rejection_reason   String?      @db.Text
+  reviewed_by        BigInt?
+  reviewed_at        DateTime?
+  created_at         DateTime     @default(now()) @db.Timestamp(0)
+  updated_at         DateTime     @updatedAt @db.Timestamp(0)
+
+  // Relations
+  user       User  @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  reviewedBy User? @relation("KycReviewedBy", fields: [reviewed_by], references: [id])
+
+  @@index([user_id], name: "idx_kyc_user")
+  @@index([document_number], name: "idx_kyc_document")
+  @@map("kyc_verifications")
+}
+
+model UserProfile {
+  id                 BigInt    @id @default(autoincrement()) @map("id")
+  user_id            BigInt    @unique
+  address            String?
+  city               String?
+  postal_code        String?
+  date_of_birth      DateTime?
+  gender             Gender?
+  avatar_url         String?
+  timezone           String?
+  preferred_language String?
+  created_at         DateTime  @default(now()) @db.Timestamp(0)
+  updated_at         DateTime  @updatedAt @db.Timestamp(0)
+
+  // Relations
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("user_profiles")
+}
+
+model Notification {
+  id         BigInt           @id @default(autoincrement()) @map("id")
+  user_id    BigInt
+  title      String
+  message    String           @db.Text
+  type       NotificationType
+  is_read    Boolean          @default(false)
+  read_at    DateTime?
+  metadata   Json?
+  created_at DateTime         @default(now()) @db.Timestamp(0)
+  updated_at DateTime         @updatedAt @db.Timestamp(0)
+
+  // Relations
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id], name: "idx_notification_user")
+  @@index([is_read], name: "idx_notification_read")
+  @@map("notifications")
+}
+
+model UserSecurity {
+  id                  BigInt           @id @default(autoincrement()) @map("id")
+  user_id             BigInt           @unique
+  two_factor_enabled  Boolean          @default(false)
+  two_factor_method   TwoFactorMethod?
+  two_factor_secret   String?
+  backup_codes        String?          @db.Text
+  password_changed_at DateTime         @default(now()) @db.Timestamp(0)
+  last_password       String?
+  created_at          DateTime         @default(now()) @db.Timestamp(0)
+  updated_at          DateTime         @updatedAt @db.Timestamp(0)
+
+  // Relations
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("user_security")
+}
+
+// prisma/schema.prisma
+model Transaction {
+  id BigInt @id @default(autoincrement()) @map("id")
+  reference          String            @unique
+  payment_id         String?           @unique // ID NowPayments
+  user_id            BigInt
+  wallet_id          BigInt
+  payment_account_id BigInt?
+  txid               String?           @unique // Transaction hash blockchain
+  type               TransactionType
+  status             TransactionStatus @default(PENDING)
+  amount             Decimal           @db.Decimal(20, 2)
+  fee                Decimal?          @default(0) @db.Decimal(20, 2)
+  
+  // Champs spécifiques à NowPayments
+  crypto_currency    String?           // BTC, ETH, USDT, etc.
+  pay_amount         Decimal?          @db.Decimal(30, 18) // Montant en crypto
+  pay_address        String?           // Adresse de réception
+  actually_paid      Decimal?          @db.Decimal(30, 18) // Montant réellement reçu
+  network            String?           // Réseau blockchain
+  smart_contract     String?           // Adresse du contrat smart
+  
+  wallet_address     String?
+  details            String?           @db.Text
+  metadata           Json?             // Stocke les données supplémentaires NowPayments
+  proof_of_payment   String?
+  processed_at       DateTime?
+  created_at         DateTime          @default(now()) @db.Timestamp(0)
+  updated_at         DateTime          @updatedAt @db.Timestamp(0)
+
+  // Relations
+  user             User              @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  wallet           Wallet            @relation(fields: [wallet_id], references: [id], onDelete: Cascade)
+  paymentAccount   PaymentAccount?   @relation(fields: [payment_account_id], references: [id])
+  withdrawal       Withdrawal?
+  investment       Investment?
+  investmentProfit InvestmentProfit?
+
+  @@index([user_id], name: "idx_transaction_user")
+  @@index([wallet_id], name: "idx_transaction_wallet")
+  @@index([payment_account_id], name: "idx_transaction_payment_account")
+  @@index([txid], name: "idx_transaction_txid")
+  @@index([payment_id], name: "idx_transaction_payment_id")
+  @@index([type], name: "idx_transaction_type")
+  @@index([status], name: "idx_transaction_status")
+  @@index([crypto_currency], name: "idx_transaction_crypto")
+  @@index([created_at], name: "idx_transaction_created_at")
+  @@map("transactions")
+}
+
+// Ajouter ces nouveaux champs au modèle PaymentAccount si nécessaire
+model PaymentAccount {
+  id                 BigInt           @id @default(autoincrement()) @map("id")
+  user_id            BigInt
+  type               PaymentMethod
+  account_identifier String
+  provider           String
+  is_default         Boolean          @default(false)
+  
+  // Nouveaux champs pour les comptes crypto
+  crypto_currency    String?          // Pour différencier BTC, ETH, etc.
+  network            String?          // Réseau blockchain
+  is_active          Boolean          @default(true)
+  
+  created_at         DateTime         @default(now()) @db.Timestamp(0)
+  updated_at         DateTime         @updatedAt @db.Timestamp(0)
+
+  // Relations
+  user         User          @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+  withdrawals  Withdrawal[]
+
+  @@index([user_id], name: "idx_payment_account_user")
+  @@index([type], name: "idx_payment_account_type")
+  @@index([account_identifier], name: "idx_payment_account_identifier")
+  @@index([crypto_currency], name: "idx_payment_account_crypto")
+  @@map("payment_accounts")
+}
+
+// Mettre à jour l'enum PaymentMethod
+enum PaymentMethod {
+  CRYPTO
+  MOBILE
+}
+
+model Wallet {
+  id             BigInt       @id @default(autoincrement()) @map("id")
+  user_id        BigInt       
+  balance        Decimal      @default(0) @db.Decimal(20, 2)
+  locked_balance Decimal      @default(0) @db.Decimal(20, 2)
+  type           WalletType   @default(DEPOSIT)
+  created_at     DateTime     @default(now()) @db.Timestamp(0)
+  updated_at     DateTime     @updatedAt @db.Timestamp(0)
+
+  // Relations
+  user         User          @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+
+  @@index([user_id], name: "idx_wallet_user")
+  @@map("wallets")
+}
+
+
+
+
+model InvestmentPlan {
+  id                   BigInt   @id @default(autoincrement()) @map("id")
+  name                 String
+  description          String?  @db.Text
+  min_amount           Decimal  @db.Decimal(20, 2)
+  max_amount           Decimal? @db.Decimal(20, 2)
+  daily_profit_percent Decimal  @db.Decimal(5, 2)
+  duration_days        Int
+  is_active            Boolean  @default(true)
+  featured            Boolean  @default(false)
+  withdrawal_lock_days Int      @default(0)
+  capital_return       Boolean  @default(true)
+  created_at           DateTime @default(now()) @db.Timestamp(0)
+  updated_at           DateTime @updatedAt @db.Timestamp(0)
+
+  // Relations
+  investments Investment[]
+
+  @@map("investment_plans")
+}
+
+model Investment {
+  id              BigInt           @id @default(autoincrement()) @map("id")
+  user_id         BigInt
+  plan_id         BigInt
+  transaction_id  BigInt           @unique
+  amount          Decimal          @db.Decimal(20, 2)
+  expected_profit Decimal          @db.Decimal(20, 2)
+  profit_earned   Decimal          @default(0) @db.Decimal(20, 2)
+  start_date      DateTime         @default(now()) @db.Timestamp(0)
+  end_date        DateTime
+  status          InvestmentStatus @default(ACTIVE)
+  created_at      DateTime         @default(now()) @db.Timestamp(0)
+  updated_at      DateTime         @updatedAt @db.Timestamp(0)
+
+  // Relations
+  user        User               @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  plan        InvestmentPlan     @relation(fields: [plan_id], references: [id])
+  transaction Transaction        @relation(fields: [transaction_id], references: [id])
+  profits     InvestmentProfit[]
+
+  @@index([user_id], name: "idx_investment_user")
+  @@index([plan_id], name: "idx_investment_plan")
+  @@index([status], name: "idx_investment_status")
+  @@map("investments")
+}
+
+model InvestmentProfit {
+  id             BigInt   @id @default(autoincrement()) @map("id")
+  investment_id  BigInt
+  transaction_id BigInt   @unique
+  amount         Decimal  @db.Decimal(20, 2)
+  profit_date    DateTime @default(now()) @db.Timestamp(0)
+  is_compounded  Boolean  @default(false)
+  created_at     DateTime @default(now()) @db.Timestamp(0)
+  updated_at     DateTime @updatedAt @db.Timestamp(0)
+
+  // Relations
+  investment  Investment  @relation(fields: [investment_id], references: [id], onDelete: Cascade)
+  transaction Transaction @relation(fields: [transaction_id], references: [id])
+
+  @@index([investment_id], name: "idx_investment_profit_investment")
+  @@index([profit_date], name: "idx_investment_profit_date")
+  @@map("investment_profits")
+}
+
+
+
+
+model SystemSetting {
+  id          BigInt   @id @default(autoincrement()) @map("id")
+  key         String   @unique
+  value       String   @db.Text
+  description String?  @db.Text
+  created_at  DateTime @default(now()) @db.Timestamp(0)
+  updated_at  DateTime @updatedAt @db.Timestamp(0)
+
+  @@map("system_settings")
+}
+
+model SystemAlert {
+  id         BigInt     @id @default(autoincrement()) @map("id")
+  title      String
+  message    String     @db.Text
+  level      AlertLevel
+  start_date DateTime   @default(now()) @db.Timestamp(0)
+  end_date   DateTime?
+  is_active  Boolean    @default(true)
+  created_at DateTime   @default(now()) @db.Timestamp(0)
+  updated_at DateTime   @updatedAt @db.Timestamp(0)
+
+  @@index([is_active], name: "idx_system_alert_active")
+  @@index([start_date, end_date], name: "idx_system_alert_dates")
+  @@map("system_alerts")
+}
+
+model AdminActivity {
+  id         BigInt   @id @default(autoincrement()) @map("id")
+  user_id    BigInt
+  action     String
+  ip_address String
+  user_agent String?  @db.Text
+  metadata   Json?
+  created_at DateTime @default(now()) @db.Timestamp(0)
+
+  // Relations
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id], name: "idx_admin_activity_user")
+  @@index([created_at], name: "idx_admin_activity_date")
+  @@map("admin_activities")
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum DocumentType {
+  PASSPORT
+  ID_CARD
+  DRIVER_LICENSE
+}
+
+enum KycStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum NotificationType {
+  SYSTEM
+  TRANSACTION
+  KYC
+  SECURITY
+}
+
+enum TwoFactorMethod {
+  EMAIL
+  AUTHENTICATOR
+  SMS
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAWAL
+  INVESTMENT
+  DIVIDEND
+  REFERRAL
+  FEE
+}
+
+
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+
+
+
+enum PaymentAccountType {
+  MOBILE_MONEY
+  CRYPTO
+}
+
+enum InvestmentStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum ReferralStatus {
+  PENDING
+  ACTIVE
+  REWARDED
+  INACTIVE
+}
+
+enum AlertLevel {
+  INFO
+  WARNING
+  CRITICAL
+  SUCCESS
+}
+
+enum Gender {
+  Homme
+  Femme
+}
+
+enum Sex {
+  Homme
+  Femme
+}
+
+enum WalletType {
+  PROFIT
+  DEPOSIT
+  BONUS
+  
+}
+
+
+
+j'utilise next-js 15
+Ecris tous les codes au complet des fichiers modifiés  sans rien oublié. verifie les erreurs.
+Prends ton temps pour raisonner, Donne-moi ta démarche et des explications en français. 
+Fais bien attention au typages.
+Attentions aux erreurs et aux fautes de saisie.
+Ne modifie pas les imports existants.
+redige tout le code complet de chaque fichier et ne demande pas de completer les saisies par moi même.
+attention aux erreurs de syntaxes. n'joute pas d'artefact. 
