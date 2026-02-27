@@ -35,12 +35,25 @@ export async function POST(request: NextRequest) {
       include: {
         wallet: {
           where: { type: 'DEPOSIT' }
+        },
+        kycVerifications: {
+          orderBy: { created_at: 'desc' },
+          take: 1
         }
       }
     });
 
     if (!user) {
       return NextResponse.json({ error: 'Utilisateur non trouvé' }, { status: 404 });
+    }
+
+    // Vérifier le statut KYC
+    const kycVerification = user.kycVerifications[0];
+    if ((!kycVerification || kycVerification.status !== 'APPROVED') && parseFloat(amount.toString()) > 25) {
+      return NextResponse.json(
+        { error: 'Limite de 25$ atteinte. Veuillez vérifier votre compte pour augmenter cette limite.' },
+        { status: 400 }
+      );
     }
 
     // Trouver ou créer le wallet DEPOSIT

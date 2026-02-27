@@ -60,6 +60,31 @@ export async function GET(
         }
       });
 
+      // 2b. Pending Rewards : basées sur les dépôts EN ATTENTE (PENDING) des filleuls
+      const pendingDeposits = await tx.transaction.aggregate({
+        where: {
+          type: 'DEPOSIT',
+          status: 'PENDING',
+          user: {
+            referralsAsReferee: {
+              some: {
+                referred_by: userIdBigInt
+              }
+            }
+          }
+        },
+        _sum: {
+          amount: true
+        }
+      });
+      
+      const referralBonusSetting = await tx.systemSetting.findUnique({
+        where: { key: 'referral_bonus_percentage' }
+      });
+      const referralBonusPercentage = parseFloat(referralBonusSetting?.value || '0');
+      const pendingDepositsAmount = Number(pendingDeposits._sum.amount || 0);
+      const calculatedPendingRewards = pendingDepositsAmount * (referralBonusPercentage / 100);
+
       // 3. Total des gains de parrainage
       const referralEarnings = await tx.referral.aggregate({
         where: {
@@ -84,6 +109,7 @@ export async function GET(
         totalReferrals,
         activeReferrals,
         totalEarned: Number(totalEarned),
+        pendingRewards: calculatedPendingRewards
       };
     });
 
@@ -91,7 +117,8 @@ export async function GET(
     const formattedStats = {
       totalReferrals: referralStats.totalReferrals,
       activeReferrals: referralStats.activeReferrals,
-      totalEarned: `$${referralStats.totalEarned.toFixed(2)}$`,
+      totalEarned: `$${referralStats.totalEarned.toFixed(2)}`,
+      pendingRewards: `$${referralStats.pendingRewards.toFixed(2)}`,
       rawTotalEarned: referralStats.totalEarned
     };
 

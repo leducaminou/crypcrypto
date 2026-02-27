@@ -1,42 +1,53 @@
-'use client'
+"use client";
 
-import { copyToClipboard } from '@/app/lib/copyToClipboard'
-import { useState } from 'react'
+import { copyToClipboard } from "@/app/lib/copyToClipboard";
+import { useState } from "react";
 
 interface ReferralLinkCardProps {
   referralLink: string;
 }
 
-export default function ReferralLinkCard2({referralLink}:ReferralLinkCardProps) {
-  const [copied, setCopied] = useState<boolean>(false)
+export default function ReferralLinkCard2({
+  referralLink,
+}: ReferralLinkCardProps) {
+  const [copied, setCopied] = useState<boolean>(false);
 
   const handleCopyClick = async (): Promise<void> => {
     try {
-      await copyToClipboard(referralLink)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
+      await copyToClipboard(referralLink);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      console.error('Échec de la copie:', err)
+      console.error("Échec de la copie:", err);
       // Vous pourriez ajouter un toast ou un message d'erreur ici
     }
-  }
+  };
 
   return (
-    <div className="mt-6 p-4 bg-gray-700 rounded-lg border border-gray-600">
-              <div className="flex flex-col sm:flex-row justify-between items-center">
-                <div className="mb-4 sm:mb-0">
-                  <p className="font-medium">Votre lien de parrainage</p>
-                  <p className="text-gray-400 text-sm">Partagez et gagnez 5% des dépôts</p>
-                </div>
-               
-                <button
+    <div className="p-6 bg-gray-800 rounded-2xl border border-gray-700 hover:border-indigo-500/50 transition-all duration-300">
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-6">
+        <div className="text-center sm:text-left">
+          <p className="font-bold text-white mb-1">
+            Votre lien de parrainage unique
+          </p>
+          <p className="text-gray-400 text-sm">
+            Partagez ce lien et gagnez instantanément{" "}
+            <span className="text-indigo-400 font-bold">5%</span> de commission.
+          </p>
+        </div>
+
+        <button
           onClick={handleCopyClick}
-          className="px-6 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 rounded-lg font-medium"
-          aria-label={copied ? 'Lien copié' : 'Copier le lien de parrainage'}
+          className={`px-8 py-3 rounded-xl font-bold transition-all duration-300 shadow-lg ${
+            copied
+              ? "bg-green-500 text-white shadow-green-500/20"
+              : "bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-500/20 hover:scale-105 active:scale-95"
+          }`}
+          aria-label={copied ? "Lien copié" : "Copier le lien de parrainage"}
         >
-          {copied ? 'Copié !' : 'Copier le lien'}
+          {copied ? "Lien Copié !" : "Copier le Lien"}
         </button>
-              </div>
-            </div>
-  )
+      </div>
+    </div>
+  );
 }

@@ -60,6 +60,19 @@ export async function POST(request: Request) {
       );
     }
 
+    // Validate KYC status
+    const kycVerification = await prisma.kycVerification.findFirst({
+      where: { user_id: BigInt(userId) },
+      orderBy: { created_at: 'desc' },
+    });
+
+    if ((!kycVerification || kycVerification.status !== 'APPROVED') && amount.greaterThan(25)) {
+      return NextResponse.json(
+        { error: 'Limite de 25$ atteinte. Veuillez vérifier votre compte pour augmenter cette limite.' },
+        { status: 400 }
+      );
+    }
+
     // Generate transaction reference
     const reference = generateTransactionReference(TransactionType.WITHDRAWAL);
 

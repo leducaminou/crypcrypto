@@ -9,6 +9,7 @@ import { TransactionStatus } from '@/types'
 import { getStatusTranslation, getStatusColor } from '@/app/lib/utils'
 import DepositDetail from '@/app/components/ui/DepositDetail'
 import ButtonWithModal from '@/app/components/modal/ButtonWithModal'
+import Button from '@/app/components/ui/Button'
 
 interface Deposit {
   id: string
@@ -153,12 +154,14 @@ export default function AdminDepositsPage() {
             <div>
               <h3 className="font-semibold text-red-300">Erreur de chargement</h3>
               <p className="text-red-400 text-sm mt-1">{error}</p>
-              <button
+              <Button
                 onClick={fetchDeposits}
-                className="mt-3 bg-red-700 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm"
+                variant="danger"
+                size="sm"
+                className="mt-3"
               >
                 Réessayer
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -228,6 +231,8 @@ export default function AdminDepositsPage() {
                         title="Détails"
                         type="create"
                         button
+                        size="sm"
+                        variant="primary"
                         content={
                           <DepositDetail
                             id={deposit.transactionId}
@@ -236,7 +241,6 @@ export default function AdminDepositsPage() {
                           />
                         }
                         onSuccess={handleSuccess}
-                        className="px-3 py-1 bg-cyan-600 hover:bg-cyan-500 text-white rounded-md text-sm"
                       />
                     </div>
                   </div>
@@ -254,25 +258,27 @@ export default function AdminDepositsPage() {
         {totalPages > 1 && (
           <div className="border-t border-gray-700 px-6 py-4">
             <div className="flex justify-between items-center">
-              <button
+              <Button
                 onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                 disabled={currentPage === 1}
-                className="px-4 py-2 bg-gray-700 hover:bg-gray-600 disabled:bg-gray-800 disabled:text-gray-600 rounded-md text-sm"
+                variant="default"
+                size="sm"
               >
                 Précédent
-              </button>
+              </Button>
 
               <span className="text-sm text-gray-400">
                 Page {currentPage} sur {totalPages}
               </span>
 
-              <button
+              <Button
                 onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                 disabled={currentPage === totalPages}
-                className="px-4 py-2 bg-gray-700 hover:bg-gray-600 disabled:bg-gray-800 disabled:text-gray-600 rounded-md text-sm"
+                variant="default"
+                size="sm"
               >
                 Suivant
-              </button>
+              </Button>
             </div>
           </div>
         )}

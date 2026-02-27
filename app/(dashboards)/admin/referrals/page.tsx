@@ -11,6 +11,7 @@ import { useRoleGuard } from "@/app/lib/utils/role-guard";
 import { Roles } from "@/app/lib/auth.config";
 import ReferralFilters from "@/app/components/ui/dashboard/ReferralFilters";
 import { ReferralStatus } from "@prisma/client";
+import ButtonLink from "@/app/components/ui/ButtonLink";
 
 const columns = [
   {
@@ -111,10 +112,13 @@ const AdminReferralsPage = () => {
       <td className="py-3">{item.status}</td>
       <td className="py-3">{new Date(item.signed_up_at).toLocaleDateString('fr-FR')}</td>
       <td className="py-3">
-        <Link href={`/admin/referrals/referral?id=${item.id}`} 
-          className="px-2 py-1 rounded-lg text-sm bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white">
+        <ButtonLink 
+          href={`/admin/referrals/referral?id=${item.id}`} 
+          variant="primary" 
+          size="sm"
+        >
           Voir
-        </Link>
+        </ButtonLink>
       </td>
     </tr>
   );

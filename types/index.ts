@@ -260,6 +260,7 @@ export interface UserResponse {
   };
   referredUsers: ReferredUser[];
   referralStats: ReferralStats;
+  kycVerification?: KycVerification | null;
 }
 
 export interface UserResponseNew {
@@ -542,6 +543,38 @@ export interface AdminReferral {
   last_earning_at: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface AdminReferralDetails {
+  id: string;
+  referrer: {
+    name: string;
+    email: string;
+    phone: string;
+    country: string;
+  };
+  referee: {
+    name: string;
+    email: string;
+    phone: string;
+    country: string;
+  };
+  earnings: number;
+  status: ReferralStatus;
+  signed_up_at: string;
+  first_deposit_at: string | null;
+  last_earning_at: string | null;
+  created_at: string;
+  bonuses: Array<{
+    id: string;
+    amount: number;
+    description: string;
+    created_at: string;
+    transaction: {
+      status: TransactionStatus;
+      reference: string;
+    };
+  }>;
 }
 
 export interface AdminReferralsResponse {

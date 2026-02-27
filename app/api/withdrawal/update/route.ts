@@ -97,35 +97,16 @@ export async function POST(request: NextRequest) {
         }
       })
 
-      // 3. Si approbation, décrémenter le wallet PROFIT
-      if (action === 'approve') {
-        // Trouver le wallet PROFIT de l'utilisateur
-        const profitWallet = await tx.wallet.findFirst({
-          where: {
-            user_id: withdrawal.user_id,
-            type: 'PROFIT'
+      // 3. Si rejet, rembourser le wallet depuis lequel la demande a été faite
+      if (action === 'reject') {
+        await tx.wallet.update({
+          where: { id: transaction.wallet_id },
+          data: {
+            balance: {
+              increment: amount
+            }
           }
         })
-
-        if (!profitWallet) {
-          throw new Error('Wallet PROFIT non trouvé')
-        }
-
-        // Vérifier que le solde est suffisant
-        const currentBalance = Number(profitWallet.balance)
-        if (currentBalance < amount) {
-          throw new Error(`Solde insuffisant dans le wallet PROFIT: ${currentBalance} < ${amount}`)
-        }
-
-        // Décrémenter le wallet
-        // await tx.wallet.update({
-        //   where: { id: profitWallet.id },
-        //   data: {
-        //     balance: {
-        //       decrement: amount
-        //     }
-        //   }
-        // })
       }
 
       // Créer une notification pour l'utilisateur

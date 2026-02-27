@@ -6,7 +6,13 @@ import { Roles } from "./app/lib/auth.config";
 // Liste des routes publiques
 const publicPaths = [
   "/",
-  "/login", 
+  "/home",
+  "/about",
+  "/contact",
+  "/help",
+  "/invest",
+  "/request-a-code",
+  "/login",
   "/register",
   "/forgot-password",
   "/reset-password",
@@ -34,13 +40,16 @@ export default withAuth(
     }
 
     // Vérifier si le chemin est public
-    const isPublicPath = publicPaths.some(path => 
-      basePath === path || basePath.startsWith(path + "/")
+    const isPublicPath = publicPaths.some(
+      (path) => basePath === path || basePath.startsWith(path + "/"),
     );
 
     if (isPublicPath) {
       // Si l'utilisateur est déjà connecté et accède à une page d'auth, rediriger
-      if (token && (basePath.startsWith("/login") || basePath.startsWith("/register"))) {
+      if (
+        token &&
+        (basePath.startsWith("/login") || basePath.startsWith("/register"))
+      ) {
         const targetPath = token.role === Roles.ADMIN ? "/admin" : "/dashboard";
         return NextResponse.redirect(new URL(targetPath, request.url));
       }
@@ -83,8 +92,8 @@ export default withAuth(
         }
 
         // Vérifier si le chemin est public
-        const isPublicPath = publicPaths.some(path => 
-          basePath === path || basePath.startsWith(path + "/")
+        const isPublicPath = publicPaths.some(
+          (path) => basePath === path || basePath.startsWith(path + "/"),
         );
 
         if (isPublicPath) {
@@ -99,7 +108,7 @@ export default withAuth(
       signIn: "/login",
       error: "/unauthorized",
     },
-  }
+  },
 );
 
 export const config = {

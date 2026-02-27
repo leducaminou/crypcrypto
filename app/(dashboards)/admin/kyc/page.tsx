@@ -152,10 +152,10 @@ const AdminKycPage = () => {
         <ButtonWithModal
                 title="Voir"
                 button
+                size="sm"
                 content={
                 <KycDetailsForm type="update" id={item.id} onModalClose={() => setIsKycModalOpen(false)} />}
                 onSuccess={handleSuccess}
-                className="px-3 py-1 bg-cyan-600 hover:bg-cyan-500 text-white rounded-md text-sm"
               />
       </td>
     </tr>

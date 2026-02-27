@@ -19,6 +19,8 @@ declare module "next-auth" {
     email: string;
     role: Roles;
     isVerified: boolean;
+    firstName?: string | null;
+    lastName?: string | null;
   }
 
   interface Session {
@@ -27,6 +29,8 @@ declare module "next-auth" {
       email: string;
       role: Roles;
       isVerified: boolean;
+      firstName?: string | null;
+      lastName?: string | null;
     };
   }
 }
@@ -37,6 +41,8 @@ declare module "next-auth/jwt" {
     email: string;
     role: Roles;
     isVerified: boolean;
+    firstName?: string | null;
+    lastName?: string | null;
   }
 }
 
@@ -87,12 +93,14 @@ export const authOptions: NextAuthOptions = {
           },
         });
 
-        return {
-          id: user.id.toString(),
-          email: user.email,
-          role: user.role as Roles,
-          isVerified: user.is_email_verified,
-        };
+          return {
+            id: user.id.toString(),
+            email: user.email,
+            role: user.role as Roles,
+            isVerified: user.is_email_verified,
+            firstName: user.first_name,
+            lastName: user.last_name,
+          };
       },
     }),
   ],
@@ -108,12 +116,14 @@ export const authOptions: NextAuthOptions = {
       session?: any; 
     }) {
       // Au moment de la connexion
-      if (user) {
-        token.id = user.id;
-        token.email = user.email;
-        token.role = user.role;
-        token.isVerified = user.isVerified;
-      }
+        if (user) {
+          token.id = user.id;
+          token.email = user.email;
+          token.role = user.role;
+          token.isVerified = user.isVerified;
+          token.firstName = user.firstName;
+          token.lastName = user.lastName;
+        }
 
       // Mettre à jour le token si la session est mise à jour
       if (trigger === "update" && session) {
@@ -127,12 +137,14 @@ export const authOptions: NextAuthOptions = {
       session: any; 
       token: JWT; 
     }) {
-      if (session.user) {
-        session.user.id = token.id;
-        session.user.email = token.email;
-        session.user.role = token.role;
-        session.user.isVerified = token.isVerified;
-      }
+        if (session.user) {
+          session.user.id = token.id;
+          session.user.email = token.email;
+          session.user.role = token.role;
+          session.user.isVerified = token.isVerified;
+          session.user.firstName = token.firstName;
+          session.user.lastName = token.lastName;
+        }
       return session;
     },
     

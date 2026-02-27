@@ -11,10 +11,10 @@ import {
   RegisterSchemaType,
 } from "@/app/lib/validations/AuthSchema";
 import PhoneField from "@/app/components/inputs/PhoneField";
+import SelectField from "@/app/components/inputs/SelectField";
 import Button from "@/app/components/ui/Button";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
-import SelectField from "@/app/components/inputs/SelectField";
 import ReferralNotExist from "@/app/components/ui/ReferralNotExist";
 import { Countries } from "@prisma/client";
 import PageLoadingSpiner from "@/app/components/ui/PageLoadingSpiner";
@@ -37,19 +37,19 @@ const RegisterClient = () => {
   } = useForm<RegisterSchemaType>({
     resolver: zodResolver(RegisterSchema),
     defaultValues: {
-      referred_code: searchParams.get('ref') || '',
-    }
+      referred_code: searchParams.get("ref") || "",
+    },
   });
 
   const fetchCountries = useCallback(async () => {
     try {
-      const response = await fetch('/api/countries');
-      if (!response.ok) throw new Error('Failed to fetch countries');
+      const response = await fetch("/api/countries");
+      if (!response.ok) throw new Error("Failed to fetch countries");
       const data = await response.json();
       setCountries(data);
     } catch (error) {
-      console.error('Error fetching countries:', error);
-      showError('Failed to load countries');
+      console.error("Error fetching countries:", error);
+      showError("Failed to load countries");
     }
   }, [showError]);
 
@@ -62,10 +62,10 @@ const RegisterClient = () => {
   const onSubmit = async (data: RegisterSchemaType) => {
     setLoading(true);
     try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
       });
@@ -73,24 +73,27 @@ const RegisterClient = () => {
       const result = await response.json();
 
       if (!response.ok) {
-        console.log('Registration error status:', response.status);
-        if(response.status === 404) {
+        console.log("Registration error status:", response.status);
+        if (response.status === 404) {
           setIsRreferalExist(false);
         }
-        throw new Error(result.error || 'Erreur lors de l\'inscription');
+        throw new Error(result.error || "Erreur lors de l'inscription");
       }
 
-      showSuccess('Compte créé avec succès!');
-      router.push('/login');
+      showSuccess("Compte créé avec succès!");
+      router.push("/login");
     } catch (error: any) {
-      console.error('Registration error:', error);
-      showError(error.message || 'Une erreur est survenue lors de la création du compte');
+      console.error("Registration error:", error);
+      showError(
+        error.message ||
+          "Une erreur est survenue lors de la création du compte",
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  if(!countries || countries.length === 0) return <PageLoadingSpiner />
+  if (!countries || countries.length === 0) return <PageLoadingSpiner />;
 
   return (
     <div className="flex flex-col justify-center py-12 sm:px-6 lg:px-8 h-screen ">
@@ -119,11 +122,24 @@ const RegisterClient = () => {
               required
             />
 
+            <SelectField
+              id="country_id"
+              name="country_id"
+              label="Pays de résidence"
+              register={register}
+              error={errors.country_id}
+              options={countries}
+              valueKey="id"
+              textKey="name"
+              placeholder="Sélectionnez votre pays"
+              required
+            />
+
             <PhoneField
               countries={countries}
               register={register}
               errors={errors}
-              transform={(value: string) => value.replace(/\s+/g, '')}
+              transform={(value: string) => value.replace(/\s+/g, "")}
               required
             />
 
@@ -155,8 +171,9 @@ const RegisterClient = () => {
               disclaimer
               register={register}
               error={errors.confirmPassword}
-              validate={(value: string) => 
-                value === passwordValue || "Les mots de passe ne correspondent pas"
+              validate={(value: string) =>
+                value === passwordValue ||
+                "Les mots de passe ne correspondent pas"
               }
               required
             />
@@ -173,24 +190,29 @@ const RegisterClient = () => {
                 className="ml-2 block text-sm text-gray-300"
               >
                 J'accepte les{" "}
-                <Link href="/terms" className="text-indigo-400 hover:text-indigo-300">
+                <Link
+                  href="/terms"
+                  className="text-indigo-400 hover:text-indigo-300"
+                >
                   conditions d'utilisation
                 </Link>
               </label>
             </div>
             {errors.terms && (
-              <p className="mt-1 text-sm text-red-400">{errors.terms.message}</p>
+              <p className="mt-1 text-sm text-red-400">
+                {errors.terms.message}
+              </p>
             )}
 
             <div>
               <Button
-                variant='primary'
-                type='submit'
+                variant="primary"
+                type="submit"
                 className="text-white"
                 fullWidth
                 disabled={loading}
               >
-                {loading ? 'Création en cours...' : 'S\'inscrire'}
+                {loading ? "Création en cours..." : "S'inscrire"}
               </Button>
             </div>
             <ReferralNotExist hidden={isRreferalExist} />
@@ -211,11 +233,11 @@ const RegisterClient = () => {
             <div className="flex justify-center">
               <ButtonLink
                 href="/login"
-                variant='secondary'
+                variant="secondary"
                 className="text-white"
                 fullWidth
               >
-                 Se connecter
+                Se connecter
               </ButtonLink>
             </div>
           </div>

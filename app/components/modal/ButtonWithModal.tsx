@@ -3,6 +3,7 @@ import React, { useState } from 'react'
 import ModalContainer from './ModalContainer';
 import { Briefcase, Eye, Pencil, Trash } from 'lucide-react';
 import { InvestmentPlan } from '@/types';
+import Button from '../ui/Button';
 
 interface ButtonWithModalProps {
   content: React.ReactElement<{
@@ -18,6 +19,7 @@ interface ButtonWithModalProps {
   title?: string;
   className?: string;
   type?: "create" | "delete" | "update" | "archive" | "view" | "upload" | "download" | "send" | "bill" | "other";
+  variant?: string;
   onSuccess?: () => void;
 }
 
@@ -70,6 +72,7 @@ const ButtonWithModal = ({
   footer,
   className,
   onSuccess,
+  variant,
 }: ButtonWithModalProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -89,12 +92,16 @@ const ButtonWithModal = ({
   return (
     <div>
       {button ? (
-        <button
+        <Button
           onClick={() => setIsModalOpen(true)}
-          className={ className ? className : `px-6 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 rounded-lg font-medium flex items-center gap-2`}
+          className={className ? className : ""}
+          variant={(variant as any) || "primary"}
+          size={size as any}
+          icon={icon}
+          iconPosition="left"
         >
-          {icon} {title || (type === 'create' ? 'Créer' : 'Modifier')}
-        </button>
+          {title || (type === 'create' ? 'Créer' : 'Modifier')}
+        </Button>
       ) : (
         <button
           onClick={() => setIsModalOpen(true)}

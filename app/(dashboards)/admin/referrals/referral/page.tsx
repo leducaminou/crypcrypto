@@ -8,6 +8,7 @@ import { Pagination } from '@/app/components/ui/Pagination';
 import { AdminReferralDetails } from '@/types';
 import { useRoleGuard } from '@/app/lib/utils/role-guard';
 import { Roles } from '@/app/lib/auth.config';
+import ButtonLink from '@/app/components/ui/ButtonLink';
 
 const ITEMS_PER_PAGE = 5;
 
@@ -93,12 +94,13 @@ const AdminReferralDetailPage = () => {
             {referral.referrer.name} → {referral.referee.name}
           </p>
         </div>
-        <Link 
+        <ButtonLink 
           href="/admin/referrals" 
-          className="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-sm"
+          variant="secondary"
+          size="sm"
         >
           ← Retour à la liste
-        </Link>
+        </ButtonLink>
       </div>
 
       {/* Referral Info Card */}

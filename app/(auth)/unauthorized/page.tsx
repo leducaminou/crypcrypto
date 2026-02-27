@@ -1,13 +1,13 @@
-'use client'
-import React from 'react'
-import Image from 'next/image'
-import Link from 'next/link'
-import {  signOut, useSession } from 'next-auth/react';
+"use client";
+import React from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { signOut, useSession } from "next-auth/react";
 
 const UnauthorizedPage = () => {
-// Fonction pour déconnecter l'utilisateur
+  // Fonction pour déconnecter l'utilisateur
   const handleLogout = async () => {
-    await signOut({ callbackUrl: '/login' });
+    await signOut({ callbackUrl: "/login" });
   };
 
   return (
@@ -15,7 +15,7 @@ const UnauthorizedPage = () => {
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center">
           <Image
-            src="/logo.png"
+            src="/images/logo/logo.png"
             alt="JuaTradX Logo"
             width={80}
             height={80}
@@ -27,7 +27,8 @@ const UnauthorizedPage = () => {
           Accès non autorisé
         </h2>
         <p className="mt-2 text-center text-sm text-gray-400">
-          Vous n'avez pas les permissions nécessaires pour accéder à cette ressource
+          Vous n'avez pas les permissions nécessaires pour accéder à cette
+          ressource
         </p>
       </div>
 
@@ -55,7 +56,8 @@ const UnauthorizedPage = () => {
             </h3>
             <div className="mt-4 text-sm text-gray-400">
               <p>
-                Vous essayez d'accéder à une page ou une fonctionnalité réservée aux utilisateurs avec les permissions appropriées.
+                Vous essayez d'accéder à une page ou une fonctionnalité réservée
+                aux utilisateurs avec les permissions appropriées.
               </p>
             </div>
           </div>
@@ -94,7 +96,7 @@ const UnauthorizedPage = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default UnauthorizedPage
+export default UnauthorizedPage;

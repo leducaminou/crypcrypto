@@ -9,6 +9,7 @@ import { TransactionStatus, TransactionStatusType } from "@/types";
 import { getStatusTranslation, getStatusColor } from "@/app/lib/utils";
 import ButtonWithModal from "@/app/components/modal/ButtonWithModal";
 import WithdrawalDetail from "@/app/components/ui/WithdrawalDetail";
+import Button from "@/app/components/ui/Button";
 
 interface Withdrawal {
   id: string;
@@ -254,12 +255,14 @@ export default function AdminWithdrawalsPage() {
                 Erreur de chargement
               </h3>
               <p className="text-red-400 text-sm mt-1">{error}</p>
-              <button
+              <Button
                 onClick={fetchWithdrawals}
-                className="mt-3 bg-red-700 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm"
+                variant="danger"
+                size="sm"
+                className="mt-3"
               >
                 Réessayer
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -325,37 +328,43 @@ export default function AdminWithdrawalsPage() {
 
                   <div className="col-span-2">
                     <div className="flex space-x-2">
-                      <button
+                      <Button
                         onClick={() =>
                           openConfirmationModal(withdrawal, "approve")
                         }
                         disabled={withdrawal.status !== TransactionStatus.PENDING.toLocaleLowerCase()}
-                        className={`px-3 py-1 rounded-md text-sm ${
+                        variant="primary"
+                        size="sm"
+                        className={`${
                           withdrawal.status === TransactionStatus.PENDING.toLocaleLowerCase()
-                            ? "bg-green-600 hover:bg-green-500 text-white"
-                            : "bg-gray-600 text-gray-400 cursor-not-allowed"
+                            ? "bg-green-600 hover:bg-green-500 from-green-600 to-green-500 text-white"
+                            : "bg-gray-600 text-gray-400 cursor-not-allowed from-gray-600 to-gray-500"
                         }`}
                       >
                         Approuver
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         onClick={() =>
                           openConfirmationModal(withdrawal, "reject")
                         }
                         disabled={withdrawal.status !== TransactionStatus.PENDING.toLocaleLowerCase()}
-                        className={`px-3 py-1 rounded-md text-sm ${
-                          withdrawal.status === TransactionStatus.PENDING.toLocaleLowerCase()
-                            ? "bg-red-600 hover:bg-red-500 text-white"
-                            : "bg-gray-600 text-gray-400 cursor-not-allowed"
+                        variant="danger"
+                        size="sm"
+                        className={`${
+                          withdrawal.status !== TransactionStatus.PENDING.toLocaleLowerCase()
+                            ? "bg-gray-600 text-gray-400 cursor-not-allowed"
+                            : ""
                         }`}
                       >
                         Rejeter
-                      </button>
+                      </Button>
                       <div className="flex justify-end">
                         <ButtonWithModal
                           title="Détails"
                           type="create"
                           button
+                          size="sm"
+                          variant="primary"
                           content={
                             <WithdrawalDetail
                               id={withdrawal.transactionId}
@@ -364,7 +373,6 @@ export default function AdminWithdrawalsPage() {
                             />
                           }
                           onSuccess={handleSuccess}
-                          className="px-3 py-1 bg-cyan-600 hover:bg-cyan-500 text-white rounded-md text-sm"
                         />
                       </div>
                     </div>
@@ -382,27 +390,29 @@ export default function AdminWithdrawalsPage() {
         {totalPages > 1 && (
           <div className="border-t border-gray-700 px-6 py-4">
             <div className="flex justify-between items-center">
-              <button
+              <Button
                 onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
                 disabled={currentPage === 1}
-                className="px-4 py-2 bg-gray-700 hover:bg-gray-600 disabled:bg-gray-800 disabled:text-gray-600 rounded-md text-sm"
+                variant="default"
+                size="sm"
               >
                 Précédent
-              </button>
+              </Button>
 
               <span className="text-sm text-gray-400">
                 Page {currentPage} sur {totalPages}
               </span>
 
-              <button
+              <Button
                 onClick={() =>
                   setCurrentPage((prev) => Math.min(prev + 1, totalPages))
                 }
                 disabled={currentPage === totalPages}
-                className="px-4 py-2 bg-gray-700 hover:bg-gray-600 disabled:bg-gray-800 disabled:text-gray-600 rounded-md text-sm"
+                variant="default"
+                size="sm"
               >
                 Suivant
-              </button>
+              </Button>
             </div>
           </div>
         )}

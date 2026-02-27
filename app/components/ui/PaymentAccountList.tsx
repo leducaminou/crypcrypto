@@ -1,12 +1,12 @@
 "use client";
-import React, { useState, useEffect } from 'react';
-import { PaymentAccount } from '@/types';
-import { useToast } from '@/hooks/use-toast';
-import ButtonWithModal from '@/app/components/modal/ButtonWithModal';
-import PaymentMethodForm from './forms/PaymentMethodForm';
-import ConfirmationModal from '@/app/components/modal/ConfirmationModal';
-import { PaymentMethod } from '@prisma/client';
-import SectionLoadingSpinner from './SectionLoadingSpinner';
+import React, { useState, useEffect } from "react";
+import { PaymentAccount } from "@/types";
+import { useToast } from "@/hooks/use-toast";
+import ButtonWithModal from "@/app/components/modal/ButtonWithModal";
+import PaymentMethodForm from "./forms/PaymentMethodForm";
+import ConfirmationModal from "@/app/components/modal/ConfirmationModal";
+import { PaymentMethod } from "@prisma/client";
+import SectionLoadingSpinner from "./SectionLoadingSpinner";
 
 interface PaymentAccountListProps {
   userId: string;
@@ -16,7 +16,9 @@ const PaymentAccountList: React.FC<PaymentAccountListProps> = ({ userId }) => {
   const [paymentAccounts, setPaymentAccounts] = useState<PaymentAccount[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [accountToDelete, setAccountToDelete] = useState<PaymentAccount | null>(null);
+  const [accountToDelete, setAccountToDelete] = useState<PaymentAccount | null>(
+    null,
+  );
   const [deleteProcessing, setDeleteProcessing] = useState(false);
   const { showSuccess, showError } = useToast();
 
@@ -24,16 +26,16 @@ const PaymentAccountList: React.FC<PaymentAccountListProps> = ({ userId }) => {
     try {
       setLoading(true);
       const response = await fetch(`/api/user/payment-account/${userId}`);
-      
+
       if (!response.ok) {
-        throw new Error('Failed to fetch payment accounts');
+        throw new Error("Failed to fetch payment accounts");
       }
-      
+
       const data = await response.json();
       setPaymentAccounts(data);
     } catch (error) {
-      console.error('Error fetching payment accounts:', error);
-      showError('Failed to load payment accounts');
+      console.error("Error fetching payment accounts:", error);
+      showError("Failed to load payment accounts");
     } finally {
       setLoading(false);
     }
@@ -50,51 +52,57 @@ const PaymentAccountList: React.FC<PaymentAccountListProps> = ({ userId }) => {
 
     try {
       setDeleteProcessing(true);
-      
+
       // Vérifier s'il y a d'autres comptes actifs
       const otherActiveAccounts = paymentAccounts.filter(
-        account => account.id !== accountToDelete.id && account.is_active
+        (account) => account.id !== accountToDelete.id && account.is_active,
       );
 
       // Si on supprime le compte par défaut et qu'il y a d'autres comptes,
       // définir le premier autre compte comme nouveau compte par défaut
       if (accountToDelete.is_default && otherActiveAccounts.length > 0) {
         const newDefaultAccount = otherActiveAccounts[0];
-        
+
         // Mettre à jour le nouveau compte par défaut
-        const updateResponse = await fetch(`/api/payment-account/update/${newDefaultAccount.id}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
+        const updateResponse = await fetch(
+          `/api/payment-account/update/${newDefaultAccount.id}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              ...newDefaultAccount,
+              is_default: true,
+            }),
           },
-          body: JSON.stringify({
-            ...newDefaultAccount,
-            is_default: true,
-          }),
-        });
+        );
 
         if (!updateResponse.ok) {
-          throw new Error('Failed to update default account');
+          throw new Error("Failed to update default account");
         }
       }
 
       // Supprimer le compte
-      const response = await fetch(`/api/user/payment-account/${accountToDelete.id}`, {
-        method: 'DELETE',
-      });
+      const response = await fetch(
+        `/api/user/payment-account/${accountToDelete.id}`,
+        {
+          method: "DELETE",
+        },
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to delete payment account');
+        throw new Error(errorData.error || "Failed to delete payment account");
       }
 
-      showSuccess('Compte de paiement supprimé avec succès');
+      showSuccess("Compte de paiement supprimé avec succès");
       setDeleteModalOpen(false);
       setAccountToDelete(null);
       fetchPaymentAccounts(); // Recharger la liste
     } catch (error: any) {
-      console.error('Error deleting payment account:', error);
-      showError(error.message || 'Failed to delete payment account');
+      console.error("Error deleting payment account:", error);
+      showError(error.message || "Failed to delete payment account");
     } finally {
       setDeleteProcessing(false);
     }
@@ -113,9 +121,9 @@ const PaymentAccountList: React.FC<PaymentAccountListProps> = ({ userId }) => {
   const getTypeDisplay = (type: PaymentMethod) => {
     switch (type) {
       case PaymentMethod.CRYPTO:
-        return 'Crypto-monnaie';
+        return "Crypto-monnaie";
       case PaymentMethod.MOBILE:
-        return 'Mobile Money';
+        return "Mobile Money";
       default:
         return type;
     }
@@ -131,33 +139,33 @@ const PaymentAccountList: React.FC<PaymentAccountListProps> = ({ userId }) => {
   // Vérifier si on peut supprimer le compte par défaut
   const canDeleteDefaultAccount = (account: PaymentAccount) => {
     if (!account.is_default) return true;
-    
+
     // Compter les autres comptes actifs
     const otherActiveAccounts = paymentAccounts.filter(
-      acc => acc.id !== account.id && acc.is_active
+      (acc) => acc.id !== account.id && acc.is_active,
     );
-    
+
     return otherActiveAccounts.length > 0;
   };
 
   const getDeleteButtonTooltip = (account: PaymentAccount) => {
     if (account.is_default) {
       const otherActiveAccounts = paymentAccounts.filter(
-        acc => acc.id !== account.id && acc.is_active
+        (acc) => acc.id !== account.id && acc.is_active,
       );
-      
+
       if (otherActiveAccounts.length === 0) {
         return "Impossible de supprimer le seul compte actif";
       }
-      
+
       return `La suppression définira "${otherActiveAccounts[0].provider}" comme compte par défaut`;
     }
-    
+
     return "Supprimer ce compte";
   };
 
   if (loading) {
-    return  <SectionLoadingSpinner/>;
+    return <SectionLoadingSpinner />;
   }
 
   return (
@@ -188,7 +196,7 @@ const PaymentAccountList: React.FC<PaymentAccountListProps> = ({ userId }) => {
           {paymentAccounts.map((account) => {
             const canDelete = canDeleteDefaultAccount(account);
             const tooltip = getDeleteButtonTooltip(account);
-            
+
             return (
               <div
                 key={account.id}
@@ -211,13 +219,15 @@ const PaymentAccountList: React.FC<PaymentAccountListProps> = ({ userId }) => {
                         </span>
                       )}
                     </div>
-                    
+
                     <p className="text-sm text-gray-300 mb-1">
-                      <span className="font-medium">Provider:</span> {getProviderDisplay(account)}
+                      <span className="font-medium">Opérateur:</span>{" "}
+                      {getProviderDisplay(account)}
                     </p>
-                    
+
                     <p className="text-sm text-gray-300">
-                      <span className="font-medium">Identifiant:</span> {account.account_identifier}
+                      <span className="font-medium">Identifiant:</span>{" "}
+                      {account.account_identifier}
                     </p>
                   </div>
 
@@ -237,11 +247,11 @@ const PaymentAccountList: React.FC<PaymentAccountListProps> = ({ userId }) => {
                       onSuccess={fetchPaymentAccounts}
                       className="text-cyan-400 hover:text-cyan-300 text-sm font-medium"
                     />
-                    
+
                     <button
                       onClick={() => openDeleteModal(account)}
                       className={`text-red-400 hover:text-red-300 text-sm font-medium ${
-                        !canDelete ? 'opacity-50 cursor-not-allowed' : ''
+                        !canDelete ? "opacity-50 cursor-not-allowed" : ""
                       }`}
                       disabled={!canDelete}
                       title={tooltip}
@@ -250,16 +260,18 @@ const PaymentAccountList: React.FC<PaymentAccountListProps> = ({ userId }) => {
                     </button>
                   </div>
                 </div>
-                
+
                 {account.is_default && !canDelete && (
                   <p className="text-xs text-gray-400 mt-2">
-                    Vous ne pouvez pas supprimer votre seul compte actif. Ajoutez un autre compte d'abord.
+                    Vous ne pouvez pas supprimer votre seul compte actif.
+                    Ajoutez un autre compte d'abord.
                   </p>
                 )}
-                
+
                 {account.is_default && canDelete && (
                   <p className="text-xs text-cyan-400 mt-2">
-                    ⚠️ La suppression de ce compte par défaut définira automatiquement un autre compte comme défaut.
+                    ⚠️ La suppression de ce compte par défaut définira
+                    automatiquement un autre compte comme défaut.
                   </p>
                 )}
               </div>
@@ -278,20 +290,33 @@ const PaymentAccountList: React.FC<PaymentAccountListProps> = ({ userId }) => {
             <div>
               <p>Êtes-vous sûr de vouloir supprimer ce compte de paiement ?</p>
               <div className="mt-2 p-3 bg-gray-900 rounded text-sm">
-                <p><strong>Type:</strong> {getTypeDisplay(accountToDelete.type)}</p>
-                <p><strong>Provider:</strong> {getProviderDisplay(accountToDelete)}</p>
-                <p><strong>Identifiant:</strong> {accountToDelete.account_identifier}</p>
-                
+                <p>
+                  <strong>Type:</strong> {getTypeDisplay(accountToDelete.type)}
+                </p>
+                <p>
+                  <strong>Provider:</strong>{" "}
+                  {getProviderDisplay(accountToDelete)}
+                </p>
+                <p>
+                  <strong>Identifiant:</strong>{" "}
+                  {accountToDelete.account_identifier}
+                </p>
+
                 {accountToDelete.is_default && (
                   <div className="mt-2 p-2 bg-yellow-900 rounded">
-                    <p className="text-yellow-300 font-semibold">⚠️ Compte par défaut</p>
+                    <p className="text-yellow-300 font-semibold">
+                      ⚠️ Compte par défaut
+                    </p>
                     <p className="text-yellow-200 text-xs mt-1">
-                      Un autre compte sera automatiquement défini comme compte par défaut.
+                      Un autre compte sera automatiquement défini comme compte
+                      par défaut.
                     </p>
                   </div>
                 )}
               </div>
-              <p className="mt-2 text-red-400">Cette action est irréversible.</p>
+              <p className="mt-2 text-red-400">
+                Cette action est irréversible.
+              </p>
             </div>
           ) : null
         }

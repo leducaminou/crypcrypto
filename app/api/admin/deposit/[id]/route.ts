@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/app/lib/auth.config'
 import { TransactionStatus, WalletType, TransactionType, ReferralStatus } from '@prisma/client'
 import { generateTransactionReference } from '@/app/lib/utils'
+import { convertFromUSD, getCurrencyByCountryCode } from '@/app/lib/currency/conversion'
 
 interface UpdateDepositRequest {
   action: 'approve' | 'reject'
@@ -48,6 +49,7 @@ export async function POST(
       include: {
         user: {
           include: {
+            country: true,
             referralsAsReferee: {
               include: {
                 referrer: true
@@ -96,6 +98,21 @@ export async function POST(
       systemSettings.find(s => s.key === 'first_deposit_bonus_percentage')?.value || '0'
     )
 
+    // Calculer les métadonnées de conversion si approbation mobile
+    let originalCurrency = transaction.original_currency;
+    let originalAmount = transaction.original_amount ? Number(transaction.original_amount) : null;
+    let exchangeRate = transaction.exchange_rate ? Number(transaction.exchange_rate) : null;
+
+    if (action === 'approve' && transaction.paymentAccount?.type === 'MOBILE' && !originalCurrency) {
+      const countryCode = transaction.user.country?.country_code || 'CM';
+      const currency = getCurrencyByCountryCode(countryCode);
+      const conv = await convertFromUSD(amount, currency);
+      
+      originalCurrency = conv.currency;
+      originalAmount = conv.local;
+      exchangeRate = conv.rate;
+    }
+
     // Commencer une transaction pour garantir l'intégrité des données
     const result = await prisma.$transaction(async (tx) => {
       const newStatus = action === 'approve' ? 'COMPLETED' : 'FAILED'
@@ -105,7 +122,12 @@ export async function POST(
         where: { id: transactionIdBigInt },
         data: { 
           status: newStatus,
-          processed_at: new Date()
+          processed_at: new Date(),
+          ...(action === 'approve' ? {
+            original_currency: originalCurrency,
+            original_amount: originalAmount,
+            exchange_rate: exchangeRate
+          } : {})
         }
       })
 

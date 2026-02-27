@@ -25,77 +25,77 @@ export default function InvestmentCard({
 }: InvestmentCardProps) {
   // Utiliser le profit calculé basé sur les jours écoulés
   const displayTotalProfit = totalProfitCalculated || totalProfit;
+  const isCompleted = status === "COMPLETED";
 
   return (
-    <div className="bg-gray-800 rounded-xl border border-gray-700 p-6 hover:border-cyan-500 transition">
-      <div className="flex justify-between items-start mb-4">
-        <h3 className="text-lg font-bold">{name}</h3>
+    <div className="bg-white/5 backdrop-blur-md rounded-2xl border border-white/5 p-5 md:p-6 hover:border-primary/20 transition-all duration-300 shadow-xl group">
+      <div className="flex justify-between items-start mb-6">
+        <h3 className="text-sm font-bold uppercase tracking-wider text-white group-hover:text-primary transition-colors">
+          {name}
+        </h3>
         <span
-          className={`px-3 py-1 rounded-full text-xs ${
-            status === "ACTIVE"
-              ? "bg-cyan-900 text-cyan-400"
-              : "bg-gray-700 text-gray-400"
+          className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ${
+            !isCompleted
+              ? "bg-green-500/10 text-green-400 border-green-500/20"
+              : "bg-white/5 text-lightblue border-white/10"
           }`}
         >
-          {status === "ACTIVE" ? "Actif" : "Terminé"}
+          {!isCompleted ? "Actif" : "Terminé"}
         </span>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 mb-6">
+      <div className="grid grid-cols-2 gap-y-4 gap-x-6 mb-6">
         <div>
-          <p className="text-gray-400 text-sm">Investissement</p>
-          <p className="font-medium">
-            {formatMonetary(amount)}
-            $
+          <p className="text-lightblue text-[10px] font-bold uppercase tracking-widest mb-1">
+            Investi
+          </p>
+          <p className="text-white font-bold">${formatMonetary(amount)}</p>
+        </div>
+        <div className="text-right">
+          <p className="text-lightblue text-[10px] font-bold uppercase tracking-widest mb-1">
+            Profit/Jour
+          </p>
+          <p className="text-secondary font-bold">
+            +${formatMonetary(dailyProfit)}
           </p>
         </div>
         <div>
-          <p className="text-gray-400 text-sm text-right">Profit quotidien</p>
-          <p className="text-cyan-400 font-medium text-right">
-            {formatMonetary(dailyProfit)}
-            $
+          <p className="text-lightblue text-[10px] font-bold uppercase tracking-widest mb-1">
+            Rendement actuel
           </p>
+          <div className="flex items-center gap-2">
+            <p className="text-white font-bold">
+              ${formatMonetary(displayTotalProfit)}
+            </p>
+            {!isCompleted && (
+              <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+            )}
+          </div>
         </div>
-        <div>
-          <p className="text-gray-400 text-sm">Profit total</p>
-          <p className="font-medium">
-            {formatMonetary(displayTotalProfit)}
-            $
+        <div className="text-right">
+          <p className="text-lightblue text-[10px] font-bold uppercase tracking-widest mb-1">
+            Durée
           </p>
-          <p className="text-xs text-gray-500 mt-1">
-            (Calculé sur les jours écoulés)
-          </p>
-        </div>
-        <div>
-          <p className="text-gray-400 text-sm text-right">Durée</p>
-          <p className="font-medium text-right">{duration}</p>
+          <p className="text-white font-bold">{duration}</p>
         </div>
       </div>
 
-      {status === "ACTIVE" && (
-        <div className="mb-6">
-          <div className="flex justify-between text-sm mb-1">
-            <span>Progression</span>
-            <span>{remainingDays} jours restants</span>
+      {!isCompleted && (
+        <div className="space-y-3">
+          <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest">
+            <span className="text-lightblue">Progression</span>
+            <span className="text-white">{remainingDays} jours restants</span>
           </div>
-          <div className="w-full bg-gray-700 rounded-full h-2">
+          <div className="w-full bg-white/5 rounded-full h-1.5 overflow-hidden border border-white/5">
             <div
-              className="bg-cyan-500 h-2 rounded-full"
+              className="bg-gradient-to-r from-primary to-secondary h-full rounded-full shadow-[0_0_10px_rgba(189,36,223,0.3)] transition-all duration-1000"
               style={{
-                width: `${100 - (remainingDays / parseInt(duration)) * 100}%`,
+                width: `${Math.min(100, 100 - (remainingDays / parseInt(duration)) * 100)}%`,
               }}
             ></div>
           </div>
         </div>
       )}
-      {/* {status === "ACTIVE" && (
-        <Link
-          href="#"
-          className="inline-block w-full py-2 text-center rounded-lg bg-gray-700 hover:bg-gray-600 transition"
-        >
-          Voir les détails
-        </Link>
-      )} */}
     </div>
   );
 }

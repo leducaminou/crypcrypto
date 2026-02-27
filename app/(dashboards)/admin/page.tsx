@@ -11,6 +11,8 @@ import { AdminStat } from '@/types'
 import RecentTransactions from '@/app/components/ui/admin/RecentTransactions'
 import { useRouter } from 'next/navigation'
 import PerformanceChart from '@/app/components/ui/admin/PerformanceChart'
+import Button from '@/app/components/ui/Button'
+import ButtonLink from '@/app/components/ui/ButtonLink'
 
 interface Investment {
   id: string
@@ -230,12 +232,14 @@ export default function AdminDashboardPage() {
             <div>
               <h3 className="font-semibold text-red-300">Erreur de chargement</h3>
               <p className="text-red-400 text-sm mt-1">{error}</p>
-              <button 
+              <Button 
                 onClick={() => window.location.reload()}
-                className="mt-3 bg-red-700 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm"
+                variant="danger"
+                size="sm"
+                className="mt-3"
               >
                 Réessayer
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -270,12 +274,13 @@ export default function AdminDashboardPage() {
         <div className="bg-gray-800 rounded-xl border border-gray-700 p-6">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-semibold">Transactions récentes</h3>
-            <button 
-              onClick={() => handleNavigation('/admin/transactions')}
-              className="text-primary hover:text-blue-600 text-sm"
+            <ButtonLink 
+              href="/admin/transactions"
+              variant="link"
+              className="!px-0 !py-0"
             >
               Voir tout
-            </button>
+            </ButtonLink>
           </div>
           <div className="space-y-4">
             <RecentTransactions transactions={recentTransactions} />
@@ -289,12 +294,13 @@ export default function AdminDashboardPage() {
         <div className="bg-gray-800 rounded-xl border border-gray-700 p-6">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-semibold">Derniers investissements</h3>
-            <button 
-              onClick={() => handleNavigation('/admin/investments')}
-              className="text-primary hover:text-blue-600 text-sm"
+            <ButtonLink 
+              href="/admin/investments"
+              variant="link"
+              className="!px-0 !py-0"
             >
               Voir tout
-            </button>
+            </ButtonLink>
             
           </div>
           <RecentInvestments investments={recentInvestments} />
@@ -304,12 +310,13 @@ export default function AdminDashboardPage() {
         <div className="bg-gray-800 rounded-xl border border-gray-700 p-6">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-semibold">Derniers retraits</h3>
-            <button 
-              onClick={() => handleNavigation('/admin/withdrawals')}
-              className="text-primary hover:text-blue-600 text-sm"
+            <ButtonLink 
+              href="/admin/withdrawals"
+              variant="link"
+              className="!px-0 !py-0"
             >
               Voir tout
-            </button>
+            </ButtonLink>
           </div>
           <RecentWithdrawals withdrawals={recentWithdrawals} />
         </div>

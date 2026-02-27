@@ -19,6 +19,7 @@ import KycVerificationForm from "@/app/components/ui/forms/KycVerificationForm";
 import PaymentMethodForm from "@/app/components/ui/forms/PaymentMethodForm";
 import ButtonWithModal from "@/app/components/modal/ButtonWithModal";
 import PaymentAccountList from "@/app/components/ui/PaymentAccountList";
+import { AlertTriangle } from "lucide-react";
 
 export default function ProfilePage() {
   useRoleGuard([Roles.USER]);
@@ -58,7 +59,7 @@ export default function ProfilePage() {
           throw new Error(
             response.status === 404
               ? "User not found"
-              : `Failed to fetch user: ${errorText}`
+              : `Failed to fetch user: ${errorText}`,
           );
         }
 
@@ -112,6 +113,23 @@ export default function ProfilePage() {
         <h1 className="text-2xl font-bold">Mon profil</h1>
       </div>
 
+      {/* Alerte KYC */}
+      {user && user.kycVerification?.status !== "APPROVED" && (
+        <div className="mb-6 bg-yellow-900/20 border border-yellow-500/50 rounded-xl p-4 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <span className="w-10 h-10 rounded-full bg-yellow-500/20 flex flex-shrink-0 items-center justify-center text-yellow-500">
+              <AlertTriangle size={20} />
+            </span>
+            <div>
+              <h3 className="text-yellow-500 font-bold">Vérification d&apos;identité requise</h3>
+              <p className="text-yellow-400/80 text-sm">
+                Votre compte n&apos;est pas encore vérifié. Vos dépôts et retraits sont limités à 25$. Complétez la vérification dans la section ci-dessous.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="w-full flex flex-col md:flex-row gap-6">
         <div className="w-full flex flex-col gap-6 md:w-2/3">
           <ProfileForm type="update" user={user} countries={countries} />
@@ -146,7 +164,7 @@ export default function ProfilePage() {
           <div className="space-y-6">
             <div className="bg-gray-800 rounded-xl border border-gray-700 p-6">
               <h3 className="text-lg font-semibold mb-4">
-                Verification profile
+                Verification d'identité
               </h3>
               <h4>Status</h4>
               <div className="space-y-4">

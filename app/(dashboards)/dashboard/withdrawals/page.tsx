@@ -18,7 +18,7 @@ import ErrorComponent from "@/app/components/ui/ErrorComponent";
 import SectionLoadingSpinner from "@/app/components/ui/SectionLoadingSpinner";
 import SectionError from "@/app/components/ui/SectionError";
 import { formatMonetary } from "@/app/lib/utils";
-import Link from "next/link";
+import ButtonLink from "@/app/components/ui/ButtonLink";
 
 // Interface pour les données de retrait (basée sur WithdrawalResponse de l'API)
 interface WithdrawalResponse {
@@ -251,6 +251,7 @@ export default function WithdrawalsPage() {
         wallet={profitWallet}
         type="create"
         user_id={id}
+        kycStatus={user?.kycVerification?.status || "PENDING"}
         paymentAccounts={paymentAccounts}
       />
     </div>
@@ -258,24 +259,26 @@ export default function WithdrawalsPage() {
     <div className="bg-gray-800 rounded-xl border border-gray-700 p-6 hover:border-cyan-500 transition">
       <div className="text-center py-12">
         <p className="text-gray-400 mb-4">Solde du compte profit est 0</p>
-        <Link
+        <ButtonLink
           href="/dashboard/investments"
-          className="text-cyan-400 hover:text-cyan-300 text-sm"
+          variant="link"
+          className="!px-0 !py-0"
         >
           Veillez investir →
-        </Link>
+        </ButtonLink>
       </div>
     </div>
   ) : (
     <div className="bg-gray-800 rounded-xl border border-gray-700 p-6 hover:border-cyan-500 transition">
       <div className="text-center py-12">
         <p className="text-gray-400 mb-4">Aucune méthode de retrait disponible</p>
-        <Link
+        <ButtonLink
           href="/dashboard/profile"
-          className="text-cyan-400 hover:text-cyan-300 text-sm"
+          variant="link"
+          className="!px-0 !py-0"
         >
           Completer le profile →
-        </Link>
+        </ButtonLink>
       </div>
     </div>
   )

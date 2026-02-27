@@ -4,15 +4,16 @@ import prisma from '@/app/lib/prisma';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const resolvedParams = await params;
     const session = await getServerSession();
     if (!session) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
     }
 
-    const notificationId = params.id;
+    const notificationId = resolvedParams.id;
 
     await prisma.notification.update({
       where: {

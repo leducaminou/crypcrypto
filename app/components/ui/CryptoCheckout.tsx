@@ -1,7 +1,7 @@
 // components/CryptoCheckout.tsx
 "use client";
 
-import { createPayment } from "@/app/services/nowpayments";
+import { nowPaymentsService } from "@/app/services/nowpayments";
 import { useState } from "react";
 import { toast } from "react-toastify";
 
@@ -19,8 +19,10 @@ export default function CryptoCheckout() {
         pay_currency: "btc", // Optionnel (sinon l'utilisateur choisit)
       };
 
-      const response = await createPayment(paymentData);
-      setPaymentUrl(response.pay_address);
+      const response = await nowPaymentsService.createPayment(paymentData);
+      if (response && response.pay_address) {
+        setPaymentUrl(response.pay_address);
+      }
       toast.success("Paiement créé avec succès !");
     } catch (error) {
       toast.error("Erreur lors de la création du paiement.");

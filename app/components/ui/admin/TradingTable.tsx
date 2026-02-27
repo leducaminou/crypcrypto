@@ -79,7 +79,7 @@ const TradingTable = () => {
   
 
   return (
-    <div className=" bg-gray-700 rounded-lg flex items-center justify-center">
+    <div className="bg-gray-800 border border-gray-700 rounded-lg flex items-center justify-center">
                <table className="table-auto w-full">
                                    <thead>
                                        <tr className="text-white rounded-2xl">
@@ -93,7 +93,7 @@ const TradingTable = () => {
                                    </thead>
                                    <tbody>
                                        {tableData.map((items, i) => (
-                                           <tr key={i} className="border-b border-b-border">
+                                           <tr key={i} className="border-b border-gray-700 hover:bg-gray-700/50 transition-colors">
                                                <td className="px-4 py-6 text-center text-white">{items.index}</td>
                                                <td className="px-4 py-6 text-center text-white flex items-center justify-start gap-5 ">
                                                    <Image 
@@ -123,7 +123,7 @@ const TradingTable = () => {
                                                    }  
                                                </td>
                                                <td className="px-4 py-6 text-center text-white">${items.cap.toLocaleString()}</td>
-                                               <td className={`px-4 py-6 text-center font-semibold ${items.action === 'Buy' ? 'text-secondary' : 'text-primary'}`}>
+                                               <td className={`px-4 py-6 text-center font-semibold ${items.action === 'Buy' ? 'text-indigo-400' : 'text-indigo-600'}`}>
                                                    {items.action  === 'Buy' ? 'Achat auto' : 'Vente auto'}
                                                </td>
                                            </tr>

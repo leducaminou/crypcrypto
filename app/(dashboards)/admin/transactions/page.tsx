@@ -6,6 +6,7 @@ import { TransactionStatus } from '@/types'
 import { getStatusTranslation, getStatusColor } from '@/app/lib/utils'
 import { Pagination } from '@/app/components/ui/Pagination'
 import TransactionFilters from '@/app/components/ui/dashboard/TransactionFilters'
+import Button from '@/app/components/ui/Button'
 
 interface Transaction {
   id: string
@@ -125,12 +126,14 @@ export default function AdminTransactionsPage() {
             <div>
               <h3 className="font-semibold text-red-300">Erreur de chargement</h3>
               <p className="text-red-400 text-sm mt-1">{error}</p>
-              <button 
+              <Button 
                 onClick={fetchTransactions}
-                className="mt-3 bg-red-700 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm"
+                variant="danger"
+                size="sm"
+                className="mt-3"
               >
                 Réessayer
-              </button>
+              </Button>
             </div>
           </div>
         </div>

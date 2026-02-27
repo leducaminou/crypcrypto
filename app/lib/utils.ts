@@ -38,6 +38,7 @@ export const transactionPrefixes: Record<TransactionType, string> = {
   DIVIDEND: 'DIV',
   REFERRAL: 'REF',
   FEE: 'FEE',
+  BONUS: 'BNS',
 };
 
 // Lettres majuscules pour la génération de référence
@@ -166,18 +167,13 @@ export function formatDate(dateString: string | Date | null | undefined): string
 
   export function getPaiementMethod(data: PaymentMethod | undefined ): string {
 
-    if(!PaymentMethod) return ''
+    if(!data) return ''
 
     switch (data) {
-      case PaymentMethod.BITCOIN:
-        return "Bitcoin (BTC)";
-      case PaymentMethod.ETHEREUM:
-        return "Ethereum (ETH)";
-      case PaymentMethod.USDT:
-        return "USDT";
+      case PaymentMethod.CRYPTO:
+        return "Paiement crypto";
       case PaymentMethod.MOBILE:
         return "Paiement mobile";
-    
       default:
         return "Autres";
     }
@@ -297,7 +293,7 @@ export function getStatusColor(status: string): string {
 
       case 'DEPOSIT':
       case TransactionType.DEPOSIT:
-        return 'Dépot';
+        return 'Dépôt';
 
       case 'WITHDRAWAL':
       case TransactionType.WITHDRAWAL:
@@ -306,10 +302,6 @@ export function getStatusColor(status: string): string {
       case 'INVESTMENT':
       case TransactionType.INVESTMENT:
         return 'Investissement';
-
-      case 'DEPOSIT':
-      case TransactionType.DEPOSIT:
-        return 'Dépot';
 
       case 'DIVIDEND':
       case TransactionType.DIVIDEND:
@@ -324,8 +316,8 @@ export function getStatusColor(status: string): string {
         return 'Frais';
 
       case 'BONUS':
+      case TransactionType.BONUS:
         return 'Bonus';
-
 
       default:
         return ''
@@ -334,10 +326,8 @@ export function getStatusColor(status: string): string {
 
 
  export const PaymentMethodList = [
-        { id:  PaymentMethod.MOBILE, title: "Paiement mobile"  },
-        { id:  PaymentMethod.BITCOIN, title: "Bitcoin (BTC)" },
-        { id:  PaymentMethod.ETHEREUM, title: "Ethereum (ETH)"  },
-        { id:  PaymentMethod.USDT, title: "USDT"  },
+        { id: PaymentMethod.MOBILE, title: "Paiement mobile" },
+        { id: PaymentMethod.CRYPTO, title: "Paiement crypto" },
       ]
 
 // Ajoutez cette fonction à votre fichier existant utils.ts

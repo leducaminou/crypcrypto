@@ -23,9 +23,11 @@ import Link from "next/link";
 import { formatMonetary } from "@/app/lib/utils";
 import SectionLoadingSpinner from "@/app/components/ui/SectionLoadingSpinner";
 import SectionError from "@/app/components/ui/SectionError";
+import { calculateChange } from "@/app/lib/calculateUtils";
 import Image from "next/image";
-import { MoveDown, MoveUp } from "lucide-react";
+import { MoveDown, MoveUp, AlertTriangle } from "lucide-react";
 import TradingTable from "@/app/components/ui/admin/TradingTable";
+import ButtonLink from "@/app/components/ui/ButtonLink";
 
 interface TransactionResponse {
   id: string;
@@ -69,7 +71,7 @@ export default function DashboardPage() {
   const { data: session, status } = useSession();
 
   const [investments, setInvestments] = useState<InvestmentResponse[] | null>(
-    null
+    null,
   );
   const [transactions, setTransactions] = useState<TransactionResponse[]>([]);
   const [loading, setLoading] = useState(true);
@@ -82,7 +84,7 @@ export default function DashboardPage() {
   const [user, setUser] = useState<UserResponse | null>(null);
   const [referralCode, setReferralCode] = useState<string | null>(null);
   const [referralStats, setReferralStats] = useState<ReferralStats | null>(
-    null
+    null,
   );
   const [referralStatsLoading, setReferralStatsLoading] = useState(true);
 
@@ -90,7 +92,7 @@ export default function DashboardPage() {
 
   const filteredTransactions = useMemo(() => {
     return transactions.filter(
-      (tx) => tx.type === "WITHDRAWAL" || tx.type === "DEPOSIT"
+      (tx) => tx.type === "WITHDRAWAL" || tx.type === "DEPOSIT",
     );
   }, [transactions]);
 
@@ -110,7 +112,7 @@ export default function DashboardPage() {
         throw new Error(
           response.status === 404
             ? "Statistiques de parrainage non trouvées"
-            : `Failed to fetch referral stats: ${errorText}`
+            : `Failed to fetch referral stats: ${errorText}`,
         );
       }
 
@@ -144,7 +146,7 @@ export default function DashboardPage() {
           throw new Error(
             response.status === 404
               ? "Aucun investissement trouvé"
-              : `Failed to fetch Investments: ${errorText}`
+              : `Failed to fetch Investments: ${errorText}`,
           );
         }
 
@@ -211,7 +213,7 @@ export default function DashboardPage() {
           throw new Error(
             response.status === 404
               ? "Utilisateur non trouvé"
-              : `Failed to fetch user: ${errorText}`
+              : `Failed to fetch user: ${errorText}`,
           );
         }
 
@@ -244,7 +246,7 @@ export default function DashboardPage() {
             setProfitWallet(null);
           } else {
             throw new Error(
-              `Failed to fetch profit wallet: ${walletResponse.status}`
+              `Failed to fetch profit wallet: ${walletResponse.status}`,
             );
           }
         } else {
@@ -274,7 +276,7 @@ export default function DashboardPage() {
             setProfitWallet(null);
           } else {
             throw new Error(
-              `Failed to fetch profit wallet: ${walletResponse.status}`
+              `Failed to fetch profit wallet: ${walletResponse.status}`,
             );
           }
         } else {
@@ -349,29 +351,27 @@ export default function DashboardPage() {
     ? investments.filter((inv) => inv.status === "ACTIVE").length
     : 0;
 
+  const totalBalance = Number(wallet?.balance || 0) + Number(profitWallet?.balance || 0) + Number(bonusWallet?.balance || 0);
+
   const stats = [
     {
       title: "Solde total",
-      value: `$${formatMonetary(
-        (Number(wallet?.balance || 0) + Number(profitWallet?.balance || 0))
-          .toFixed(2)
-          .toString()
-      )}`,
-      change: "+5.2%",
+      value: `$${formatMonetary(totalBalance.toFixed(2).toString())}`,
+      change: transactions ? calculateChange(transactions as any, totalBalance, 'TOTAL') : "+0.0%",
       icon: "💰",
     },
     {
       title: "Portefeuille",
       value: `$${wallet?.balance ? formatMonetary(wallet?.balance) : "0.00"}`,
-      change: "+12.7%",
-      icon: "📈",
+      change: transactions ? calculateChange(transactions as any, Number(wallet?.balance || 0), 'DEPOSIT') : "+0.0%",
+      icon: "📉",
     },
     {
       title: "Profit total",
       value: `$${
         profitWallet?.balance ? formatMonetary(profitWallet?.balance) : "0.00"
       }`,
-      change: "+12.7%",
+      change: transactions ? calculateChange(transactions as any, Number(profitWallet?.balance || 0), 'PROFIT') : "+0.0%",
       icon: "📈",
     },
     {
@@ -379,13 +379,13 @@ export default function DashboardPage() {
       value: `$${
         bonusWallet?.balance ? formatMonetary(bonusWallet?.balance) : "0.00"
       }`,
-      change: "+12.7%",
-      icon: "📈",
+      change: transactions ? calculateChange(transactions as any, Number(bonusWallet?.balance || 0), 'BONUS') : "+0.0%",
+      icon: "🎁",
     },
     {
       title: "Investissements actifs",
       value: activeInvestmentsCount.toString(),
-      change: "+1",
+      change: "+0",
       icon: "💼",
     },
   ];
@@ -401,11 +401,11 @@ export default function DashboardPage() {
   const paginatedTransactions = useMemo(() => {
     const sorted = [...filteredTransactions].sort(
       (a, b) =>
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
     );
     return sorted.slice(
       (currentPage - 1) * ITEMS_PER_PAGE,
-      currentPage * ITEMS_PER_PAGE
+      currentPage * ITEMS_PER_PAGE,
     );
   }, [filteredTransactions, currentPage]);
 
@@ -424,8 +424,29 @@ export default function DashboardPage() {
     );
 
   return (
-    <div className="flex flex-col gap-0 text-white mt-28">
-      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+    <div className="flex flex-col gap-6 text-white mt-24 px-2 md:px-0">
+      {/* Alerte KYC */}
+      {user && user.kycVerification?.status !== "APPROVED" && (
+        <div className="bg-yellow-900/20 border border-yellow-500/50 rounded-xl p-4 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <span className="w-10 h-10 rounded-full bg-yellow-500/20 flex flex-shrink-0 items-center justify-center text-yellow-500">
+              <AlertTriangle size={20} />
+            </span>
+            <div>
+              <h3 className="text-yellow-500 font-bold">Vérification d&apos;identité requise</h3>
+              <p className="text-yellow-400/80 text-sm">
+                Votre compte n&apos;est pas encore vérifié. Vos dépôts et retraits sont limités à 25$.
+              </p>
+            </div>
+          </div>
+          <ButtonLink href="/dashboard/profile" variant="primary" size="sm" className="whitespace-nowrap">
+            Vérifier mon compte
+          </ButtonLink>
+        </div>
+      )}
+
+      {/* Statistiques principales en haut */}
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6 mb-2">
         {stats.map((stat, index) => (
           <StatsCard
             key={index}
@@ -437,47 +458,67 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      <div className="bg-gray-800 rounded-xl border border-gray-700 p-6 mb-8">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold">
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-500">
-              Programme de parrainage
-            </span>
-          </h2>
-          <Link
-            href="/dashboard/referrals"
-            className="text-primary hover:text-blue-600 text-sm flex items-center"
-          >
-            Voir tout <span className="ml-1">→</span>
-          </Link>
-        </div>
-
-        {referralStatsLoading ? (
-          <div className="flex justify-center items-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-400"></div>
+      <div className="bg-gray-800 py-8 px-4 shadow sm:rounded-lg sm:px-10 mb-8">
+        <div className="relative z-10">
+          <div className="flex justify-between items-center mb-8">
+            <div>
+              <h2 className="text-2xl font-extrabold mb-1 text-white">
+                Programme de Parrainage
+              </h2>
+              <p className="text-gray-400 text-sm">
+                Développez votre réseau et augmentez vos gains
+              </p>
+            </div>
+            <ButtonLink
+              href="/dashboard/referrals"
+              variant="secondary"
+              size="sm"
+            >
+              Voir tout <span className="ml-2">→</span>
+            </ButtonLink>
           </div>
-        ) : (
-          <ReferralStatsCard stats={referralStats || defaultReferralStats} />
-        )}
 
-        <ReferralLinkCard2 referralLink={referralCode || ""} />
+          <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
+            {referralStatsLoading ? (
+              <div className="flex justify-center items-center py-12">
+                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
+              </div>
+            ) : (
+              <ReferralStatsCard
+                stats={referralStats || defaultReferralStats}
+              />
+            )}
+
+            <div className="pt-4">
+              <ReferralLinkCard2 referralLink={referralCode || ""} />
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        <div className="bg-gray-800 rounded-xl border border-gray-700 p-6 lg:col-span-2">
-          <div className="flex justify-between gap-2">
-            <h3 className="text-lg font-semibold mb-4">
-              Achat vente par IA en temps réel
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="bg-gray-800 py-8 px-4 shadow sm:rounded-lg sm:px-10 lg:col-span-2">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-xl font-bold flex items-center text-white">
+              <span className="w-2 h-2 rounded-full bg-green-500 mr-2 animate-pulse"></span>
+              Achat/Vente IA en temps réel
             </h3>
-            <Link href="/dashboard/ai-trading" className="text-cyan-500 hover:text-cyan-300">
-              Voir plus
-            </Link>
+            <ButtonLink
+              href="/dashboard/ai-trading"
+              variant="link"
+              size="sm"
+              className="!px-0 !py-0"
+            >
+              Ouvrir le terminal →
+            </ButtonLink>
           </div>
-          <TradingTable />
+          <div className="overflow-hidden rounded-2xl border border-white/5 bg-black/20">
+            <TradingTable />
+          </div>
         </div>
 
-        <div className="bg-gray-800 rounded-xl border border-gray-700 p-6">
-          <h3 className="text-lg font-semibold mb-4">Investissements actifs</h3>
+        <div className="bg-gray-800 py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          <h3 className="text-xl font-bold mb-6 text-white">Portefeuille Actif</h3>
           <div className="space-y-4">
             {investments && investments.length > 0 ? (
               investments
@@ -485,19 +526,20 @@ export default function DashboardPage() {
                 .sort(
                   (a, b) =>
                     new Date(b.created_at).getTime() -
-                    new Date(a.created_at).getTime()
+                    new Date(a.created_at).getTime(),
                 )
                 .slice(0, 3)
                 .map((investment) => (
                   <div
                     key={investment.id}
-                    className="p-4 bg-gray-700 rounded-lg"
+                    className="p-5 bg-white/5 hover:bg-white/10 rounded-2xl border border-white/5 transition-all duration-200 group"
                   >
-                    <div className="flex justify-between">
-                      <span className="font-medium">
-                        {investment.plan.name || "Plan inconnu"}
+                    <div className="flex justify-between items-start mb-2">
+                      <span className="font-bold text-white group-hover:text-primary transition-colors text-sm uppercase tracking-wide">
+                        {investment.plan.name || "Plan Standard"}
                       </span>
-                      <span className="text-cyan-400">
+                      <span className="px-2 py-1 rounded-lg bg-green-500/10 text-green-400 text-xs font-bold border border-green-500/20">
+                        +
                         {(
                           (Number(investment.expected_profit) /
                             Number(investment.amount)) *
@@ -506,73 +548,101 @@ export default function DashboardPage() {
                         %
                       </span>
                     </div>
-                    <div className="mt-2 text-sm text-gray-400">
-                      <p>Montant: {Number(investment.amount).toFixed(2)}$</p>
-                      <p>
-                        Jours restants:{" "}
-                        {Math.ceil(
-                          (new Date(investment.end_date).getTime() -
-                            new Date().getTime()) /
-                            (1000 * 60 * 60 * 24)
-                        )}
-                      </p>
+                    <div className="mt-4 space-y-2">
+                      <div className="flex justify-between text-xs text-lightblue">
+                        <span>Montant investi</span>
+                        <span className="text-white font-medium">
+                          ${Number(investment.amount).toFixed(2)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-xs text-lightblue">
+                        <span>Temps restant</span>
+                        <span className="text-white font-medium">
+                          {Math.ceil(
+                            (new Date(investment.end_date).getTime() -
+                              new Date().getTime()) /
+                              (1000 * 60 * 60 * 24),
+                          )}{" "}
+                          jours
+                        </span>
+                      </div>
+                      <div className="w-full h-1.5 bg-gray-700 rounded-full mt-2 overflow-hidden">
+                        <div className="h-full bg-indigo-500 w-2/3"></div>
+                      </div>
                     </div>
                   </div>
                 ))
             ) : (
-              <div className="text-center py-8">
-                <p className="text-gray-400 mb-4">Aucun investissement actif</p>
-                <Link
+              <div className="text-center py-12 bg-white/5 rounded-2xl border border-dashed border-white/10">
+                <p className="text-lightblue text-sm mb-6">
+                  Aucun investissement actif pour le moment
+                </p>
+                <ButtonLink
                   href="/dashboard/investments"
-                  className="text-cyan-400 hover:text-cyan-300 text-sm"
+                  variant="primary"
                 >
-                  Commencer à investir →
-                </Link>
+                  Investir maintenant
+                </ButtonLink>
               </div>
             )}
           </div>
         </div>
       </div>
 
-      <div className="bg-gray-800 rounded-xl border border-gray-700 p-6">
-        <h2 className="text-lg font-semibold mb-6">
-          Historique des transactions
+      <div className="bg-gray-800 py-8 px-4 shadow sm:rounded-lg sm:px-10 mb-12">
+        <h2 className="text-xl font-bold mb-8 flex items-center text-white">
+          <span className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center mr-3 text-primary">
+            <MoveUp size={18} />
+          </span>
+          Historique des Transactions
         </h2>
 
         {filteredTransactions.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-400 mb-4">Aucune transaction disponible</p>
+          <div className="text-center py-16 bg-white/5 rounded-2xl border border-dashed border-white/10">
+            <p className="text-lightblue mb-8">
+              Votre historique est encore vide
+            </p>
             <div className="flex justify-center gap-4">
-              <Link
+              <ButtonLink
                 href="/dashboard/wallet"
-                className="text-cyan-400 hover:text-cyan-300 text-sm"
+                variant="secondary"
               >
-                Faire un dépôt →
-              </Link>
-              <Link
+                Déposer des fonds
+              </ButtonLink>
+              <ButtonLink
                 href="/dashboard/investments"
-                className="text-cyan-400 hover:text-cyan-300 text-sm"
+                variant="primary"
               >
-                Investir →
-              </Link>
+                Investir
+              </ButtonLink>
             </div>
           </div>
         ) : (
           <>
-            <div className="overflow-x-auto mb-6">
-              <table className="w-full">
+            <div className="overflow-x-auto mb-8">
+              <table className="w-full text-sm">
                 <thead>
-                  <tr className="text-left text-gray-400 border-b border-gray-700">
-                    <th className="pb-3">Date</th>
-                    <th className="pb-3">Type</th>
-                    <th className="pb-3">Montant</th>
-                    <th className="pb-3">Statut</th>
+                  <tr className="text-left text-lightblue border-b border-white/5">
+                    <th className="pb-4 font-bold uppercase tracking-wider text-[10px]">
+                      Date
+                    </th>
+                    <th className="pb-4 font-bold uppercase tracking-wider text-[10px]">
+                      Type de mouvement
+                    </th>
+                    <th className="pb-4 font-bold uppercase tracking-wider text-[10px]">
+                      Montant total
+                    </th>
+                    <th className="pb-4 font-bold uppercase tracking-wider text-[10px]">
+                      État actuel
+                    </th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-white/5">
                   {paginatedTransactions.map((tx) => {
                     const isDeposit = tx.type === "DEPOSIT";
-                    const typeText = isDeposit ? "Dépôt" : "Retrait";
+                    const typeText = isDeposit
+                      ? "Approvisionnement"
+                      : "Retrait de fonds";
                     const amountColor = isDeposit
                       ? "text-green-400"
                       : "text-red-400";
@@ -581,32 +651,44 @@ export default function DashboardPage() {
                     return (
                       <tr
                         key={tx.id}
-                        className="border-b border-gray-700 hover:bg-gray-700"
+                        className="group hover:bg-white/5 transition-colors"
                       >
-                        <td className="py-3">{formatDate(tx.created_at)}</td>
-                        <td>{typeText}</td>
-                        <td className={amountColor}>
-                          {amountSign}
-                          {"$"}
+                        <td className="py-5 font-medium">
+                          {formatDate(tx.created_at)}
+                        </td>
+                        <td className="py-5">
+                          <span
+                            className={`flex items-center gap-2 ${isDeposit ? "text-green-400" : "text-red-400"}`}
+                          >
+                            {isDeposit ? (
+                              <MoveDown size={14} />
+                            ) : (
+                              <MoveUp size={14} />
+                            )}
+                            {typeText}
+                          </span>
+                        </td>
+                        <td className={`py-5 font-bold ${amountColor}`}>
+                          {amountSign}$
                           {formatMonetary(
-                            Number(tx.amount).toFixed(2).toString()
+                            Number(tx.amount).toFixed(2).toString(),
                           )}
                         </td>
-                        <td>
+                        <td className="py-5">
                           <span
-                            className={`px-2 py-1 rounded-full text-xs ${
+                            className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ${
                               tx.status === "COMPLETED"
-                                ? "bg-green-900 text-green-400"
+                                ? "bg-green-500/10 text-green-400 border-green-500/20"
                                 : tx.status === "PENDING"
-                                ? "bg-yellow-900 text-yellow-400"
-                                : "bg-red-900 text-red-400"
+                                  ? "bg-yellow-500/10 text-yellow-400 border-yellow-500/20"
+                                  : "bg-red-500/10 text-red-400 border-red-500/20"
                             }`}
                           >
                             {tx.status === "COMPLETED"
-                              ? "Complété"
+                              ? "Validé"
                               : tx.status === "PENDING"
-                              ? "En attente"
-                              : "Échoué"}
+                                ? "En attente"
+                                : "Annulé"}
                           </span>
                         </td>
                       </tr>
@@ -617,12 +699,13 @@ export default function DashboardPage() {
             </div>
 
             {totalPages > 1 && (
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={setCurrentPage}
-                className="mt-4"
-              />
+              <div className="flex justify-center border-t border-white/5 pt-8">
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                />
+              </div>
             )}
           </>
         )}

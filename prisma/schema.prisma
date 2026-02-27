@@ -25,13 +25,13 @@ model User {
   remember_token     String?
   is_active          Boolean   @default(true)
   is_locked          Boolean   @default(false)
-  is_new_user          Boolean   @default(true)
+  is_new_user        Boolean   @default(true)
   referral_code      String    @unique
   referred_by        BigInt?
-  
+
   // Relations
-  country_id BigInt 
-  country   Countries @relation(fields: [country_id], references: [id])
+  country_id BigInt
+  country    Countries @relation(fields: [country_id], references: [id])
 
   profile             UserProfile?
   kycVerifications    KycVerification[]
@@ -54,17 +54,18 @@ model User {
   @@map("users")
 }
 
-model Countries {  // 
-  id           BigInt    @id @default(autoincrement())
-  name         String @unique   
-  country_code String @unique   
-  dial_code    String @unique 
-  is_active            Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
+model Countries {
+  id           BigInt   @id @default(autoincrement())
+  name         String   @unique
+  country_code String   @unique
+  dial_code    String   @unique
+  is_active    Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now())
 
-  users User[]  // Relation au pluriel
+  users User[] // Relation au pluriel
 }
+
 model ActivationToken {
   id        BigInt   @id @default(autoincrement()) @map("id")
   token     String   @unique
@@ -186,7 +187,7 @@ model UserSecurity {
 
 // prisma/schema.prisma
 model Transaction {
-  id BigInt @id @default(autoincrement()) @map("id")
+  id                 BigInt            @id @default(autoincrement()) @map("id")
   reference          String            @unique
   payment_id         String?           @unique // ID NowPayments
   user_id            BigInt
@@ -197,22 +198,27 @@ model Transaction {
   status             TransactionStatus @default(PENDING)
   amount             Decimal           @db.Decimal(20, 2)
   fee                Decimal?          @default(0) @db.Decimal(20, 2)
-  
+
   // Champs spécifiques à NowPayments
-  crypto_currency    String?           // BTC, ETH, USDT, etc.
-  pay_amount         Decimal?          @db.Decimal(30, 18) // Montant en crypto
-  pay_address        String?           // Adresse de réception
-  actually_paid      Decimal?          @db.Decimal(30, 18) // Montant réellement reçu
-  network            String?           // Réseau blockchain
-  smart_contract     String?           // Adresse du contrat smart
-  
-  wallet_address     String?
-  details            String?           @db.Text
-  metadata           Json?             // Stocke les données supplémentaires NowPayments
-  proof_of_payment   String?
-  processed_at       DateTime?
-  created_at         DateTime          @default(now()) @db.Timestamp(0)
-  updated_at         DateTime          @updatedAt @db.Timestamp(0)
+  crypto_currency String? // BTC, ETH, USDT, etc.
+  pay_amount      Decimal? @db.Decimal(30, 18) // Montant en crypto
+  pay_address     String? // Adresse de réception
+  actually_paid   Decimal? @db.Decimal(30, 18) // Montant réellement reçu
+  network         String? // Réseau blockchain
+  smart_contract  String? // Adresse du contrat smart
+
+  // Champs conversion de devise (XAF→USD, crypto→USD, etc.)
+  original_currency String? // Devise originale: XAF, XOF, BTC, etc.
+  original_amount   Decimal? @db.Decimal(30, 8) // Montant dans la devise originale
+  exchange_rate     Decimal? @db.Decimal(30, 10) // Taux de conversion utilisé
+
+  wallet_address   String?
+  details          String?   @db.Text
+  metadata         Json? // Stocke les données supplémentaires NowPayments
+  proof_of_payment String?
+  processed_at     DateTime?
+  created_at       DateTime  @default(now()) @db.Timestamp(0)
+  updated_at       DateTime  @updatedAt @db.Timestamp(0)
 
   // Relations
   user             User              @relation(fields: [user_id], references: [id], onDelete: Cascade)
@@ -237,20 +243,20 @@ model Transaction {
 
 // Ajouter ces nouveaux champs au modèle PaymentAccount si nécessaire
 model PaymentAccount {
-  id                 BigInt           @id @default(autoincrement()) @map("id")
+  id                 BigInt        @id @default(autoincrement()) @map("id")
   user_id            BigInt
   type               PaymentMethod
   account_identifier String
   provider           String
-  is_default         Boolean          @default(false)
-  
+  is_default         Boolean       @default(false)
+
   // Nouveaux champs pour les comptes crypto
-  crypto_currency    String?          // Pour différencier BTC, ETH, etc.
-  network            String?          // Réseau blockchain
-  is_active          Boolean          @default(true)
-  
-  created_at         DateTime         @default(now()) @db.Timestamp(0)
-  updated_at         DateTime         @updatedAt @db.Timestamp(0)
+  crypto_currency String? // Pour différencier BTC, ETH, etc.
+  network         String? // Réseau blockchain
+  is_active       Boolean @default(true)
+
+  created_at DateTime @default(now()) @db.Timestamp(0)
+  updated_at DateTime @updatedAt @db.Timestamp(0)
 
   // Relations
   user         User          @relation(fields: [user_id], references: [id], onDelete: Cascade)
@@ -271,13 +277,13 @@ enum PaymentMethod {
 }
 
 model Wallet {
-  id             BigInt       @id @default(autoincrement()) @map("id")
-  user_id        BigInt       
-  balance        Decimal      @default(0) @db.Decimal(20, 2)
-  locked_balance Decimal      @default(0) @db.Decimal(20, 2)
-  type           WalletType   @default(DEPOSIT)
-  created_at     DateTime     @default(now()) @db.Timestamp(0)
-  updated_at     DateTime     @updatedAt @db.Timestamp(0)
+  id             BigInt     @id @default(autoincrement()) @map("id")
+  user_id        BigInt
+  balance        Decimal    @default(0) @db.Decimal(20, 2)
+  locked_balance Decimal    @default(0) @db.Decimal(20, 2)
+  type           WalletType @default(DEPOSIT)
+  created_at     DateTime   @default(now()) @db.Timestamp(0)
+  updated_at     DateTime   @updatedAt @db.Timestamp(0)
 
   // Relations
   user         User          @relation(fields: [user_id], references: [id], onDelete: Cascade)
@@ -286,9 +292,6 @@ model Wallet {
   @@index([user_id], name: "idx_wallet_user")
   @@map("wallets")
 }
-
-
-
 
 model InvestmentPlan {
   id                   BigInt   @id @default(autoincrement()) @map("id")
@@ -299,7 +302,7 @@ model InvestmentPlan {
   daily_profit_percent Decimal  @db.Decimal(5, 2)
   duration_days        Int
   is_active            Boolean  @default(true)
-  featured            Boolean  @default(false)
+  featured             Boolean  @default(false)
   withdrawal_lock_days Int      @default(0)
   capital_return       Boolean  @default(true)
   created_at           DateTime @default(now()) @db.Timestamp(0)
@@ -356,13 +359,10 @@ model InvestmentProfit {
   @@map("investment_profits")
 }
 
-
-
-
 model Referral {
   id               BigInt         @id @default(autoincrement()) @map("id")
-  referred_by      BigInt  
-  user_id       BigInt  @unique    
+  referred_by      BigInt
+  user_id          BigInt         @unique
   earnings         Decimal        @default(0) @db.Decimal(20, 2)
   status           ReferralStatus @default(PENDING)
   signed_up_at     DateTime       @default(now()) @db.Timestamp(0)
@@ -480,9 +480,8 @@ enum TransactionType {
   DIVIDEND
   REFERRAL
   FEE
+  BONUS
 }
-
-
 
 enum TransactionStatus {
   PENDING
@@ -490,9 +489,6 @@ enum TransactionStatus {
   FAILED
   CANCELLED
 }
-
-
-
 
 enum PaymentAccountType {
   MOBILE_MONEY
@@ -533,5 +529,4 @@ enum WalletType {
   PROFIT
   DEPOSIT
   BONUS
-  
 }

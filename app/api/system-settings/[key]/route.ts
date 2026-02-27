@@ -33,14 +33,15 @@ function serializeBigInt(obj: any): any {
 }
 
 interface RouteParams {
-  params: {
+  params: Promise<{
     key: string;
-  };
+  }>;
 }
 
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
-    const { key } = params;
+    const resolvedParams = await params;
+    const { key } = resolvedParams;
 
     // Décoder la clé si elle contient des caractères spéciaux
     const decodedKey = decodeURIComponent(key);
@@ -91,7 +92,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
 export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
-    const { key } = params;
+    const resolvedParams = await params;
+    const { key } = resolvedParams;
     const decodedKey = decodeURIComponent(key);
 
     // Vérifier les permissions admin
@@ -160,7 +162,8 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
-    const { key } = params;
+    const resolvedParams = await params;
+    const { key } = resolvedParams;
     const decodedKey = decodeURIComponent(key);
 
     // Vérifier les permissions admin

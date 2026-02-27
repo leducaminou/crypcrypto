@@ -57,6 +57,19 @@ export async function POST(request: Request) {
       );
     }
 
+    // Vérifier le statut KYC
+    const kycVerification = await prisma.kycVerification.findFirst({
+      where: { user_id: BigInt(body.user_id) },
+      orderBy: { created_at: 'desc' },
+    });
+
+    if ((!kycVerification || kycVerification.status !== 'APPROVED') && body.amount > 25) {
+      return NextResponse.json(
+        { error: 'Limite de 25$ atteinte. Veuillez vérifier votre compte pour augmenter cette limite.' },
+        { status: 400 }
+      );
+    }
+
     // Vérifier que le wallet existe et appartient à l'utilisateur
     const wallet = await prisma.wallet.findUnique({
       where: { id: BigInt(body.wallet_id), user_id: BigInt(body.user_id) },

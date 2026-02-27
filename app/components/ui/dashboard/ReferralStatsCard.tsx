@@ -12,40 +12,47 @@ export default function ReferralStatsCard({ stats }: ReferralStatsCardProps) {
   const {
     totalReferrals = 0,
     activeReferrals = 0,
-    totalEarned = '$0.00',
-    pendingRewards = '0.00$'
+    totalEarned = "$0.00",
+    pendingRewards = "0.00$",
   } = stats;
 
   const statsItems = [
     {
       label: "Total des filleuls",
       value: totalReferrals.toString(),
-      description: "Personnes inscrites via votre lien"
+      description: "Inscrits via votre lien",
     },
     {
       label: "Filleuls actifs",
       value: activeReferrals.toString(),
-      description: "Filleuls avec dépôt"
+      description: "Avec au moins un dépôt",
     },
     {
-      label: "Total gagné",
+      label: "Gains accumulés",
       value: totalEarned,
-      description: "Revenus de parrainage"
+      description: "Commissions directes",
     },
     {
-      label: "Récompenses en attente",
+      label: "Récompenses",
       value: pendingRewards,
-      description: "Gains non distribués"
-    }
+      description: "En attente de validation",
+    },
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
       {statsItems.map((item, index) => (
-        <div key={index} className="bg-gray-700 rounded-lg p-4">
-          <p className="text-gray-400 text-sm">{item.label}</p>
-          <p className="text-lg font-bold mt-1 text-cyan-400">{item.value}</p>
-          <p className="text-gray-500 text-xs mt-1">{item.description}</p>
+        <div
+          key={index}
+          className="bg-gray-800 hover:bg-gray-700 rounded-2xl p-4 border border-gray-700 transition-all duration-300"
+        >
+          <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest">
+            {item.label}
+          </p>
+          <p className="text-lg font-bold mt-2 text-white">{item.value}</p>
+          <p className="text-gray-500 text-[10px] mt-1">
+            {item.description}
+          </p>
         </div>
       ))}
     </div>

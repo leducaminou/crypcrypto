@@ -4,7 +4,8 @@ const typeIcons: Record<TransactionType, string> = {
   DEPOSIT: '💰',
   WITHDRAWAL: '💸', 
   INVESTMENT: '💼',
-  DIVIDEND: '📈'
+  DIVIDEND: '📈',
+  BONUS: '🎁'
 }
 
 const statusColors: Record<TransactionStatus, string> = {
@@ -18,7 +19,8 @@ const typeLabels: Record<TransactionType, string> = {
   DEPOSIT: 'Dépôt',
   WITHDRAWAL: 'Retrait',
   INVESTMENT: 'Investissement',
-  DIVIDEND: 'Dividende'
+  DIVIDEND: 'Dividende',
+  BONUS: 'Bonus'
 }
 
 interface TransactionCardProps {

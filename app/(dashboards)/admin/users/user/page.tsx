@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { formatMonetary } from '@/app/lib/utils';
 import { Pagination } from '@/app/components/ui/Pagination';
+import ButtonLink from '@/app/components/ui/ButtonLink';
 import { 
   AdminUserWithStats, 
   UserResponse, 
@@ -215,12 +216,13 @@ const AdminUserDetailPage = () => {
               : 'Nom non renseigné'}
           </p>
         </div>
-        <Link 
+        <ButtonLink 
           href="/admin/users" 
-          className="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-sm"
+          variant="secondary"
+          size="sm"
         >
           ← Retour à la liste
-        </Link>
+        </ButtonLink>
       </div>
 
       {/* User Info Card */}

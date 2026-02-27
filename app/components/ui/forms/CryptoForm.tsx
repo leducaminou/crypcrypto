@@ -22,6 +22,7 @@ interface WalletFormProps extends AllFormProps {
   };
   userCurrency?: string;
   userEmail?: string;
+  kycStatus?: string;
 }
 
 interface CryptoOption {
@@ -38,7 +39,7 @@ const DEFAULT_CRYPTO_OPTIONS: CryptoOption[] = [
   { code: 'usdc', name: 'USD Coin (USDC)' },
 ];
 
-export default function CryptoForm({ type, id, user_id, wallet, userCurrency, userEmail, onSuccess, onModalClose }: WalletFormProps) {
+export default function CryptoForm({ type, id, user_id, wallet, userCurrency, userEmail, kycStatus, onSuccess, onModalClose }: WalletFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [estimatedAmount, setEstimatedAmount] = useState<number | null>(null);
@@ -307,6 +308,14 @@ const onSubmit = async (data: CryptoTransactionSchemaType) => {
     return;
   }
 
+  if (kycStatus !== 'APPROVED' && data.amount > 25) {
+    setError('amount', {
+      type: 'manual',
+      message: 'Limite de 25$ atteinte. Veuillez vérifier votre compte.',
+    });
+    return;
+  }
+
   setLoading(true);
   try {
     console.log('Creating payment with data:', data);
@@ -499,6 +508,12 @@ const onSubmit = async (data: CryptoTransactionSchemaType) => {
               />
               {errors.amount && (
                 <p className="text-sm text-red-400">{errors.amount.message}</p>
+              )}
+              {kycStatus !== 'APPROVED' && (
+                <p className="text-xs text-yellow-400 mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3 flex-shrink-0" />
+                  Limite de 25$ pour les comptes non vérifiés.
+                </p>
               )}
             </div>
 

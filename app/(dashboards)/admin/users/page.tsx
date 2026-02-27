@@ -9,6 +9,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRoleGuard } from "@/app/lib/utils/role-guard";
 import { Roles } from "@/app/lib/auth.config";
+import ButtonLink from "@/app/components/ui/ButtonLink";
 
 const columns = [
   {
@@ -115,10 +116,13 @@ const AdminUsersPage = () => {
       <td className="py-3 text-center">{item.referree}</td>
       <td className="py-3">{formatMonetary(item.referree_profit.toFixed(2))}$</td>
       <td className="py-3">
-        <Link href={`/admin/users/user?id=${item.id}`} 
-        className="px-2 py-1 rounded-lg text-sm bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white">
+        <ButtonLink 
+          href={`/admin/users/user?id=${item.id}`} 
+          variant="primary" 
+          size="sm"
+        >
           Voir
-        </Link>
+        </ButtonLink>
       </td>
     </tr>
   );

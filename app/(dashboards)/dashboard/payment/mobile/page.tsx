@@ -88,6 +88,9 @@ const MobilePaymentPage = () => {
   const [paymentAccount, setPaymentAccount] = useState<PaymentAccountResponse | null>(null);
   const [proofFile, setProofFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const [localAmount, setLocalAmount] = useState<number | null>(null);
+  const [localCurrency, setLocalCurrency] = useState<string | null>(null);
 
   const [mobileName, setMobileName] = useState<string | null>(null)
 
@@ -105,6 +108,25 @@ const MobilePaymentPage = () => {
     } 
 
   }, [paymentAccount]);
+
+  // Fetch currency conversion for USSD
+  useEffect(() => {
+    const fetchConversion = async () => {
+      if (paymentParams.amount && paymentParams.countryCode) {
+        try {
+          const res = await fetch(`/api/currencies/convert?countryCode=${paymentParams.countryCode}&usdAmount=${paymentParams.amount}`);
+          if (res.ok) {
+            const data = await res.json();
+            setLocalAmount(data.local);
+            setLocalCurrency(data.currency);
+          }
+        } catch (e) {
+          console.error('Failed to fetch conversion', e);
+        }
+      }
+    };
+    fetchConversion();
+  }, [paymentParams.amount, paymentParams.countryCode]);
 
 
   useEffect(() => {
@@ -209,12 +231,13 @@ const MobilePaymentPage = () => {
 
 
     let ussdCode: string = '';
+    const amountToPay = localAmount || paymentParams.amount; // Use local currency if available
 
     // Utilisez des conditions séparées au lieu d'imbriquer
     if (paymentAccount.provider === 'Orange Money') {
-      ussdCode = `#150*11*${OrangeNumber}*${paymentParams.amount}#`;
+      ussdCode = `#150*11*${OrangeNumber}*${amountToPay}#`;
     } else if (paymentAccount.provider === 'MTN Money') {
-      ussdCode = `*126**1*1*${MtnNumber}*${paymentParams.amount}*1#`;
+      ussdCode = `*126**1*1*${MtnNumber}*${amountToPay}*1#`;
     } else {
       showError('Opérateur mobile non pris en charge');
       return;
@@ -312,8 +335,8 @@ const MobilePaymentPage = () => {
           </span>
 
           <span className="text-gray-400">Montant:</span>
-          <span className="font-medium">
-            {paymentParams.amount}$
+          <span className="font-medium text-xl text-cyan-400">
+            ${paymentParams.amount} USD {localAmount && localCurrency ? <span className="text-sm text-gray-300 ml-1">(≈ {localAmount.toLocaleString()} {localCurrency})</span> : ''}
           </span>
 
           <span className="text-gray-400">Compte:</span>
@@ -339,8 +362,12 @@ const MobilePaymentPage = () => {
         <div className="flex flex-col gap-4 bg-gray-800 rounded-lg p-6 w-full md:w-2/3">
           {paymentAccount?.provider === 'Orange Money' ? (
             <div>
-              <h2 className="text-xl font-bold mb-4">Instructions pour {paymentAccount?.provider} {user?.user?.country?.name || ''}</h2>
-              <p>1. Cliquez sur "Ajouter les fonds" pour composer automatiquement le code USSD</p>
+              <h2 className="text-xl font-bold mb-2">Instructions pour {paymentAccount?.provider} {user?.user?.country?.name || ''}</h2>
+              <div className="bg-yellow-900/40 border border-yellow-500/50 p-4 rounded-md mb-6 inline-block">
+                <p className="text-yellow-400 font-bold mb-1">Montant exact à transférer :</p>
+                <p className="text-2xl font-black text-white">{localAmount ? `${localAmount.toLocaleString()} ${localCurrency}` : `${paymentParams.amount} USD`}</p>
+              </div>
+              <p className="mb-2">1. Cliquez sur "Ajouter les fonds" pour composer automatiquement le code USSD</p>
 
               <p>2. Validez le paiement sur votre téléphone au compte ({mobileName})</p>
 
@@ -352,8 +379,16 @@ const MobilePaymentPage = () => {
             </div>
           ) : (
             <div>
-              <h2 className="text-xl font-bold mb-4">Instructions pour {paymentAccount?.provider}</h2>
-              <p>Veuillez suivre les instructions spécifiques à votre opérateur mobile pour effectuer le paiement.</p>
+              <h2 className="text-xl font-bold mb-2">Instructions pour {paymentAccount?.provider}</h2>
+              <div className="bg-yellow-900/40 border border-yellow-500/50 p-4 rounded-md mb-6 inline-block">
+                <p className="text-yellow-400 font-bold mb-1">Montant exact à transférer :</p>
+                <p className="text-2xl font-black text-white">{localAmount ? `${localAmount.toLocaleString()} ${localCurrency}` : `${paymentParams.amount} USD`}</p>
+              </div>
+              <p className="mb-2">1. Cliquez sur "Ajouter les fonds" pour composer automatiquement le code USSD</p>
+              <p className="mb-2">2. Validez le paiement sur votre téléphone au compte ({mobileName})</p>
+              <p className="mb-2">3. Uploadez une capture d'écran du message de paiement ou tout autre preuve</p>
+              <p className="mb-2">4. Cliquez sur confirmer le paiement</p>
+              <p>5. Après confirmation nous allons valider votre paiement</p>
             </div>
           )}
 

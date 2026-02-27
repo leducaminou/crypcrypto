@@ -14,6 +14,7 @@ import { z } from "zod";
 import { formatMonetary, PaymentMethodList } from "@/app/lib/utils";
 import { WithdrawalSchema, WithdrawalSchemaType } from "@/app/lib/validations/WithdrawalSchema";
 import { ApiPaymentAccount, WalletResponse } from "@/app/(dashboards)/dashboard/withdrawals/page";
+import { AlertCircle } from "lucide-react";
 
 interface PlanFormProps extends AllFormProps {
   onModalClose?: () => void;
@@ -21,6 +22,7 @@ interface PlanFormProps extends AllFormProps {
   user_id: string;
   wallet: WalletResponse;
   paymentAccounts: ApiPaymentAccount[];
+  kycStatus?: string;
 }
 
 interface ApiInvestmentPlan extends Omit<InvestmentPlan, 'id' | 'min_amount' | 'max_amount'> {
@@ -35,6 +37,7 @@ const WithdrawalForm = ({
   user_id,  
   wallet, 
   paymentAccounts, 
+  kycStatus,
   onSuccess, 
   onModalClose 
 }: PlanFormProps) => {
@@ -75,9 +78,10 @@ const WithdrawalForm = ({
       if (isNaN(numValue)) return "Doit être un nombre";
       if (numValue <= 0) return "Le montant doit être positif";
       if (numValue > Number(wallet.balance)) return `Le montant ne peut pas dépasser le solde disponible (${formatMonetary(wallet.balance)}$)`;
+      if (kycStatus !== "APPROVED" && numValue > 25) return "Limite de 25$ atteinte pour les comptes non vérifiés";
       return true;
     },
-    [wallet.balance]
+    [wallet.balance, kycStatus]
   );
 
   const handleFormSuccess = useCallback(() => {
@@ -115,6 +119,11 @@ const WithdrawalForm = ({
 
       if (amountValue > Number(wallet.balance)) {
         showError(`Le montant ne peut pas dépasser ${formatMonetary(wallet.balance)}$`);
+        return;
+      }
+
+      if (kycStatus !== "APPROVED" && amountValue > 25) {
+        showError("Limite de 25$ atteinte. Veuillez vérifier votre compte.");
         return;
       }
 
@@ -157,7 +166,7 @@ const WithdrawalForm = ({
 
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 pb-16" noValidate>
         <h1 className="font-semibold text-lg">
-          {type === "create" ? "Nouvel investissement" : "Modifier votre investissement"}
+          {type === "create" ? "Demande de retrait" : "Modifier votre retrait"}
         </h1>
         
         <SelectField
@@ -190,6 +199,13 @@ const WithdrawalForm = ({
             trigger("amount");
           }}
         />
+
+        {kycStatus !== "APPROVED" && (
+          <p className="text-xs text-yellow-400 mt-[-10px] ml-1 flex items-center gap-1">
+            <AlertCircle className="w-3 h-3 flex-shrink-0" />
+            Limite de 25$ pour les comptes non vérifiés.
+          </p>
+        )}
 
         <div className="flex items-center gap-3">
           <SubmitFormButton

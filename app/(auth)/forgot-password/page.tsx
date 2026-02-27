@@ -31,8 +31,8 @@ const ForgotPasswordPage = () => {
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center">
           <Image
-            src="/logo.png"
-            alt="JuaTradX Logo"
+            src="/images/logo/logo.png"
+            alt="FiguraNex Logo"
             width={80}
             height={80}
             className="rounded-lg"
@@ -50,24 +50,22 @@ const ForgotPasswordPage = () => {
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-gray-800 py-8 px-4 shadow sm:rounded-lg sm:px-10">
           <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
-           
-              <InputField
-                  id="email"
-                  name="email"
-                  type="email"
-                  label="Adresse email"
-                  autoComplete="email"
-                  required
-                  register={register}
-                  error={errors.email}
-                  placeholder="votre@email.com"
-                />
+            <InputField
+              id="email"
+              name="email"
+              type="email"
+              label="Adresse email"
+              autoComplete="email"
+              required
+              register={register}
+              error={errors.email}
+              placeholder="votre@email.com"
+            />
 
             <div className="rounded-md bg-gray-700 p-4">
               <div className="flex">
                 <div className="flex-shrink-0">
-                  
-                  <CircleAlert className="h-5 w-5 text-indigo-400"/>
+                  <CircleAlert className="h-5 w-5 text-indigo-400" />
                 </div>
                 <div className="ml-3">
                   <h3 className="text-sm font-medium text-indigo-300">
@@ -75,13 +73,13 @@ const ForgotPasswordPage = () => {
                   </h3>
                   <div className="mt-2 text-sm text-gray-400">
                     <p>
-                      Un lien de réinitialisation vous sera envoyé par email. Ce lien expirera dans 24 heures.
+                      Un lien de réinitialisation vous sera envoyé par email. Ce
+                      lien expirera dans 24 heures.
                     </p>
                   </div>
                 </div>
               </div>
             </div>
-
 
             <div>
               <button
@@ -92,8 +90,6 @@ const ForgotPasswordPage = () => {
                 Envoyer les instructions
               </button>
             </div>
-
-            
           </form>
 
           <div className="mt-6">

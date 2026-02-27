@@ -275,13 +275,15 @@ export default function AdminInvestmentsClient({
                       content={<PlanForm type="update" id={row.id} onModalClose={() => setIsModalOpen(false)} />}
                       onSuccess={handleSuccess}
                     />
-                    <button
+                    <Button
                       onClick={() => handleDeletePlan(row.id)}
-                      className="text-red-400 hover:text-red-300 p-1"
+                      variant="ghost"
+                      size="sm"
+                      className="text-red-400 hover:text-red-300 hover:bg-red-900/20 px-2 py-2"
                       title="Supprimer"
                     >
                       <Trash className="h-5 w-5" />
-                    </button>
+                    </Button>
                   </div>
                 ),
               },

@@ -27,9 +27,10 @@ export const genderList = [
 ];
 
 export const authorizedMobilePayment = ['+237', '00237', '237']
+export const CAMEROON_DIAL_CODE = '+237'
+export const CONTACT_EMAIL = 'contact@monaia.com'
 
-
-export const OrangeNumber = '695233759' 
-export const OrangeName = 'Jua orang'
+export const OrangeNumber = '695233759'
+export const OrangeName = 'FiguraNex Orange'
 export const MtnNumber = '654720874'
-export const MtnName= 'Jua Mtn'
+export const MtnName = 'FiguraNex MTN'
