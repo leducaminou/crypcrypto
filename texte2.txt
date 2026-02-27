@@ -1,52 +1,94 @@
+Agis comme un developpeur  senior next js, app router, typescript, tailwindcss, prisma.
 
-Agis comme un developpeur Senipor next js, et un spécialiste de la fintech.
+Je veux que tu restructures entièrement ce projet afin d’implémenter un système multilingue complet et proprement architecturé, avec les langues suivantes :
 
-modifie le nom du projet, c'est maintenant FiguraNex.
+🇫🇷 Français
 
-analyse le projet de fond en comble. je veux que tu enlève le systeme basé sur le token. tout doit etre en dollar usd.
+🇬🇧 Anglais
 
-on doit investir en dollar, et gagner des dollars.
+🇪🇸 Espagnol
 
-lorsqu'on ajoute de l'argent savegarder le montant ajouter en dollar.
+🎯 Objectifs principaux
+1️⃣ Architecture i18n
 
-en cas d'ajout du XAF, du XOF, ou n'importe quel monnaie convertir en USD COURS ACTUEL. 
+Mettre en place une architecture claire et scalable pour la gestion des traductions.
 
-POUR LE MOMENT, le paiement mobile c'est XAF, le montant ajouter au porytefeuille doit être convertit en $ si la transaction est acceptée.
+Séparer les fichiers de traduction par langue (ex: /locales/en/, /locales/fr/, /locales/es/).
 
-le retrait se fait en dollar
+Centraliser toutes les chaînes de caractères dans des fichiers JSON (ou équivalent).
+
+Supprimer tout texte statique directement écrit dans les composants.
+
+2️⃣ Sélecteur de langue
+
+Modifier :
+
+Navbar
+
+<Header />
+
+afin d’y intégrer un sélecteur de langue fonctionnel :
+
+Sous forme de dropdown ou menu déroulant propre.
+
+La langue sélectionnée doit être persistée.
+
+3️⃣ Détection automatique de langue
+
+Détecter automatiquement la langue du navigateur utilisateur.
+
+Si la langue correspond à :
+
+fr → afficher Français
+
+es → afficher Espagnol
+
+toute autre langue → fallback vers Anglais
+
+La langue par défaut doit être Anglais (en).
+
+Si un cookie ou une préférence existe déjà, elle doit avoir priorité sur la détection navigateur.
+
+4️⃣ Gestion des cookies & cache
+
+Sauvegarder la langue choisie dans un cookie (ou localStorage si plus pertinent).
+
+Assurer que :
+
+Le cache ne bloque pas le changement de langue.
+
+Le changement de langue met correctement à jour le contenu.
+
+Aucun conflit entre SSR/CSR si applicable.
+
+Si SSR est utilisé, gérer correctement l’hydratation.
+
+5️⃣ Gestion des assets (IMPORTANT ⚠️)
+
+Les liens vers les images ne doivent jamais être traduits.
+Les chemins vers les images doivent rester identiques quelle que soit la langue.
 
 
-même traitement pour les paiement en crypto. 
+6️⃣ Bonnes pratiques
 
+Typage propre si TypeScript est utilisé.
 
-je veux aussi que l'utilisateur dès son inscription choisie le pays. 
+Code propre et maintenable.
 
-actuellement si tu as remarqué on 2 manière d'ajouter de l'argent, paiement mobile et paiement par crypto.
+Pas de duplication inutile.
 
-pour le paiement mobile cela ne doit être disponible que pour le cameroun la monnaie c'est le XAF, pour les autres pays j'aimerais mentionner nous contacter à contact@monaia.com pour le paiement mobile pour d'autres pays.
+Optimiser les performances.
 
-précision on utilise NowPayments.
-n'hésite pas a aller plus loin et à proposer une stratégie plus efficace.
+Préparer le projet pour l’ajout futur d’autres langues.
 
+7️⃣ Résultat attendu
 
-au plan actuel je veux que tu analyse tout vraiment, les composant, les pages, les routes, les schema, les services, les hooks, les types, les interfaces, tout.
+Fournir la nouvelle structure du projet.
 
+Montrer les fichiers de traduction exemples.
 
+Montrer les modifications nécessaires dans Navbar et <Header />.
 
-je veux que tu ajoute une logique implacable à toule system, tu as accès au routes, aux schema, tu as champs libre. 
+Expliquer brièvement la logique mise en place.
 
-  
-pour précision
-la avalidation de la transaction en deposit est manuelle. c'est l'ADMIN qui valide si c'est oui l'argent est ajouté au wallet.
-l'utilisateur peut retirer en mobile ou en crypto.
-
-en crypto il donne son compte crypto et le type de crypto qu'il veut recvoir.
-si c'est en mobile il donne le numero de telephone de son compte.
-
-la avalidation de la transaction en withdrawal est manuelle. c'est l'ADMIN qui valide si c'est oui l'argent est retirer au wallet.
-
-
-Afficher le taux XAF actuel sous le champ montant (USD) faire en fonction du pays et de la monnaie de l'utlisateur en non en XAF uniquement.
-Appeler GET /api/currencies/convert?from=XAF&amount={usdAmount} en debounce pour afficher l'équivalent de la monnaie de l'utlisateur
- 
- verifie qu'on a accès à .env et que tout est configuré correctement puis proced au plan,
+Fournir un exemple de hook ou provider utilisé.
